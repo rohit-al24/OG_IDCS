@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block root %}
+<style>
+    /* Reuse the site's card/header visual style (same as On-Duty page) */
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+        border: none;
+    }
+    .card-header {
+        background: #1976d2;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.25rem;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+    }
+    .card-header .header-title { margin: 0; }
+    /* Home icon in header: white color and larger clickable area */
+    .card-header .home-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 36px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.06);
+        text-decoration: none;
+    }
+    .card-header .home-icon i { color: #fff; font-size: 1.15rem; }
+    .card-header .home-icon:hover { background: rgba(255,255,255,0.12); }
+
+    /* QR frame that fits the site look */
+    .qr-frame {
+        width: 100%;
+        max-width: 420px;
+        height: 360px;
+        margin: 0 auto;
+        border-radius: 12px;
+        border: 3px dashed rgba(255,255,255,0.18);
+        box-shadow: 0 8px 20px rgba(25,118,210,0.06);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .scanner-instructions { color: #374151; margin-bottom: 0.5rem; }
+
+    .camera-error { color: #b91c1c; font-weight:600; }
+
+    @media (max-width: 767px) {
+        .qr-frame { max-width: 320px; height: 320px; }
+    }
+    /* Overlay styles */
+    .overlay {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 18%;
+        width: calc(100% - 40px);
+        max-width: 420px;
+        background: rgba(255,255,255,0.98);
+        border-radius: 8px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+        z-index: 30;
+    }
+    /* small gap utility for older bootstrap versions */
+    .gap-2 { gap: .5rem; }
+</style>
+
+<div class="animated fadeIn" style="margin-top:16px;">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <span class="header-title">Scan Gate QR Code</span>
+                    <!-- Home icon: white color, accessible, clickable area -->
+                    <a href="{% url 'dash' %}" class="home-icon" title="Dashboard" aria-label="Dashboard">
+                        <i class="fa fa-home" aria-hidden="true"></i>
+                    </a>
+                </div>
+
+                <div class="card-body text-center">
+                    <p class="scanner-instructions small">Place the gate QR code inside the frame. The camera permission prompt will appear — allow access to scan.</p>
+
+                    <div id="reader" class="mx-auto qr-frame" aria-label="QR code scanner"></div>
+                    <div id="result" class="mt-3"></div>
+
+                    <div id="cameraControls" class="mt-2 d-flex justify-content-center gap-2 align-items-center">
+                        <select id="cameraSelect" class="form-control form-control-sm" style="max-width:260px; display:none;"></select>
+                        <button id="torchToggle" class="btn btn-outline-secondary btn-sm d-none">Toggle Torch</button>
+                        <button id="restartButton" class="btn btn-outline-primary btn-sm d-none">Restart Scanner</button>
+                        <button id="retryPermission" class="btn btn-warning btn-sm d-none">Enable Camera / Retry</button>
+                    </div>
+
+                    <!-- First-time overlay with short step guide -->
+                    <div id="firstTimeOverlay" class="overlay p-3 text-left" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>How to scan</strong>
+                                <ol class="mb-1 pl-3" style="margin:0;">
+                                    <li>Allow camera access when prompted.</li>
+                                    <li>Place the QR code inside the frame.</li>
+                                </ol>
+                                <small class="text-muted">You can change camera from the dropdown or use torch if available.</small>
+                            </div>
+                            <button id="dismissOverlay" class="btn btn-sm btn-light" title="Dismiss">Got it</button>
+                        </div>
+                    </div>
+                    <p id="cameraMessage" class="mt-2 small text-muted"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    // Use Html5Qrcode (not the Scanner helper) to allow camera selection and torch control
+    let html5Qr = null;
+    let currentCameraId = null;
+    let torchOn = false;
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log('Code scanned =', decodedText, decodedResult);
+        // stop scanning to prevent multiple callbacks
+        if (html5Qr) {
+            html5Qr.stop().then(() => {
+                document.getElementById('restartButton').classList.remove('d-none');
+            }).catch(e => console.warn('Stop failed', e));
+        }
+
+        try {
+            const url = new URL(decodedText, window.location.href);
+            window.location.href = url.href;
+        } catch (err) {
+            document.getElementById('result').textContent = decodedText;
+        }
+    }
+
+    function onScanFailure(error) {
+        // transient failures — ignore
+    }
+
+    async function listCameras() {
+        try {
+            const devices = await Html5Qrcode.getCameras();
+            const select = document.getElementById('cameraSelect');
+            select.innerHTML = '';
+            if (!devices || devices.length === 0) {
+                select.style.display = 'none';
+                return;
+            }
+            devices.forEach(dev => {
+                const opt = document.createElement('option');
+                opt.value = dev.id;
+                opt.text = dev.label || dev.id || 'Camera';
+                select.appendChild(opt);
+            });
+            select.style.display = '';
+            // choose last (usually back camera on mobile) if available
+            const preferred = devices[devices.length - 1].id;
+            select.value = preferred;
+            startCamera(select.value);
+        } catch (err) {
+            console.warn('Could not list cameras', err);
+        }
+    }
+
+    async function startCamera(cameraId) {
+        // Stop previous if running
+        if (html5Qr) {
+            try { await html5Qr.stop(); } catch(e){}
+            try { html5Qr.clear(); } catch(e){}
+            html5Qr = null;
+        }
+
+        html5Qr = new Html5Qrcode("reader");
+        currentCameraId = cameraId;
+
+        const config = { fps: 10, qrbox: { width: 300, height: 300 } };
+        html5Qr.start(cameraId, config, onScanSuccess, onScanFailure)
+            .then(() => {
+                document.getElementById('cameraMessage').textContent = '';
+                document.getElementById('restartButton').classList.add('d-none');
+                // after starting, check torch capability
+                setTimeout(checkTorchSupport, 500);
+            })
+            .catch(err => {
+                console.warn('Start camera failed', err);
+                document.getElementById('cameraMessage').textContent = 'Unable to access camera. Please allow permission or choose another camera.';
+                document.getElementById('retryPermission').classList.remove('d-none');
+            });
+    }
+
+    async function checkTorchSupport() {
+        try {
+            const video = document.querySelector('#reader video');
+            const track = video && video.srcObject && video.srcObject.getVideoTracks && video.srcObject.getVideoTracks()[0];
+            const torchBtn = document.getElementById('torchToggle');
+            if (track && typeof track.getCapabilities === 'function') {
+                const caps = track.getCapabilities();
+                if (caps && caps.torch) {
+                    torchBtn.classList.remove('d-none');
+                    return true;
+                }
+            }
+            torchBtn.classList.add('d-none');
+            return false;
+        } catch (err) {
+            console.warn('Torch check failed', err);
+            document.getElementById('torchToggle').classList.add('d-none');
+            return false;
+        }
+    }
+
+    async function toggleTorch() {
+        try {
+            const video = document.querySelector('#reader video');
+            const track = video && video.srcObject && video.srcObject.getVideoTracks && video.srcObject.getVideoTracks()[0];
+            if (!track) return alert('Camera track not available');
+            torchOn = !torchOn;
+            await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+            document.getElementById('torchToggle').textContent = torchOn ? 'Torch On' : 'Torch Off';
+        } catch (err) {
+            console.warn('Torch toggle failed', err);
+            alert('Torch not supported on this device.');
+        }
+    }
+
+    // Request camera permission separately — this helps show a clearer flow
+    function requestCameraPermission() {
+        document.getElementById('cameraMessage').textContent = 'Requesting camera permission...';
+        return navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                stream.getTracks().forEach(t => t.stop());
+                document.getElementById('cameraMessage').textContent = '';
+                listCameras();
+                return true;
+            })
+            .catch(err => {
+                console.warn('Camera permission denied', err);
+                document.getElementById('cameraMessage').textContent = '';
+                document.getElementById('cameraMessage').classList.add('camera-error');
+                document.getElementById('cameraMessage').textContent = 'Camera access denied or not available. Please allow camera permission in your browser and retry.';
+                document.getElementById('retryPermission').classList.remove('d-none');
+                return false;
+            });
+    }
+
+    // DOM wiring
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.getElementById('cameraSelect');
+        const restartBtn = document.getElementById('restartButton');
+        const retryBtn = document.getElementById('retryPermission');
+        const torchBtn = document.getElementById('torchToggle');
+        const overlay = document.getElementById('firstTimeOverlay');
+        const dismiss = document.getElementById('dismissOverlay');
+
+        // overlay: show if user hasn't dismissed before
+        try {
+            if (!localStorage.getItem('gatepass_scanner_seen')) {
+                overlay.style.display = '';
+            }
+        } catch(e) { overlay.style.display = ''; }
+
+        dismiss && dismiss.addEventListener('click', function () {
+            overlay.style.display = 'none';
+            try { localStorage.setItem('gatepass_scanner_seen', '1'); } catch(e){}
+        });
+
+        select && select.addEventListener('change', function () {
+            startCamera(this.value);
+        });
+
+        restartBtn && restartBtn.addEventListener('click', function () {
+            document.getElementById('result').textContent = '';
+            this.classList.add('d-none');
+            if (currentCameraId) startCamera(currentCameraId);
+        });
+
+        retryBtn && retryBtn.addEventListener('click', function () {
+            this.classList.add('d-none');
+            document.getElementById('cameraMessage').classList.remove('camera-error');
+            requestCameraPermission();
+        });
+
+        torchBtn && torchBtn.addEventListener('click', toggleTorch);
+
+        // Kick off permission + camera listing
+        if (navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            requestCameraPermission();
+        } else {
+            document.getElementById('cameraMessage').textContent = 'Camera API not supported in this browser.';
+        }
+    });
+</script>
+
+{% endblock %}

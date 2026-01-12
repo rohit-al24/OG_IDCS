@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
+{% block root %}
+<div class="row">
+    <div class="col-12 d-flex justify-content-center align-items-center">
+        <div class="card mb-4 w-100">
+            <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <div class="d-flex flex-column flex-md-row align-items-center w-100">
+                    <div class="pr-4 d-flex align-items-center">
+                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
+                    </div>
+                    <div class="d-flex flex-column align-items-start w-100">
+                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
+                        <div class="text-center text-md-left" style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
+                        <hr class="my-2 w-100">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                    <div class="mt-3 mt-md-0 text-center">
+                        {% if duser.profile %}
+                            <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                        {% else %}
+                            <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        {% endif %}
+                    </div>
+                    <div class="mt-3 mt-md-0 text-center text-md-left">
+                        <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                        <strong>Name:</strong> {{ duser.name }}<br>
+                        <strong>User:</strong> HOD
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left side (75% on desktop) -->
+    <div class="col-12 col-lg-9">
+        <!-- Bonafide and Gatepass Applications -->
+        <div class="row">
+            <!-- Bonafide Applications -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card" style="font-size:0.95rem;">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center" style="padding:0.6rem 1rem;">
+                        <span>Today's Bonafide Applications</span>
+                        <a href="{% url 'hod_bonafide_view' %}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for bonafide in bonafides_today %}
+                        <li class="list-group-item" style="padding:0.6rem 1rem;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ bonafide.student.name }}</strong><br>
+                                    <small>{{ bonafide.sub }}</small><br>
+                                    <small class="text-muted">{{ bonafide.created|date:"d M Y H:i" }}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="badge {% if bonafide.Hstatus == 'Approved' %}badge-success{% elif bonafide.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                        {{bonafide.Hstatus}}
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item" style="padding:0.6rem 1rem;">No Bonafide applications today.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Gatepass Applications -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="card" style="font-size:0.95rem;">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" style="padding:0.6rem 1rem;">
+                        <span>Today's Gatepass Applications</span>
+                        <a href="{% url 'hod_gatepass_view' %}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for gatepass in gatepasses_today %}
+                        <li class="list-group-item" style="padding:0.6rem 1rem;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ gatepass.student.name }}</strong><br>
+                                    <small>{{ gatepass.sub }}</small><br>
+                                    <small class="text-muted">{{ gatepass.created|date:"d M Y H:i" }}</small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="badge {% if gatepass.Hstatus == 'Approved' %}badge-success{% elif gatepass.Hstatus == 'Rejected' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                        {{gatepass.Hstatus}}
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item" style="padding:0.6rem 1rem;">No Gatepass applications today.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Ratings and Recent Logs removed from HOD dashboard (style-only change) -->
+    </div>
+
+    <!-- Right side notification panel (25% on desktop) -->
+    <div class="d-none d-lg-block col-lg-3">
+        <div class="card mb-3 sticky-top" style="top: 20px;">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <span>Recent Notifications</span>
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'hod_notification_history' %}" class="btn btn-light btn-sm mr-2">View All</a>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush" id="recent-notifications-list" style="max-height:calc(100vh - 220px);overflow-y:auto;">
+                {% for note in recent_notifications|slice:":5" %}
+                <li class="list-group-item">
+                    <small class="text-muted">{{ note.created_at|date:"d M Y H:i" }}</small><br>
+                    {{ note.message }}
+                </li>
+                {% empty %}
+                <li class="list-group-item">No recent notifications.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile notification button -->
+<button id="mobile-notification-fab" class="mobile-notification-fab d-lg-none" aria-label="Show notifications">
+    <i class="fa fa-bell" aria-hidden="true"></i>
+    <span id="mobile-notification-count" class="mobile-notification-count">0</span>
+</button>
+
+<!-- Mobile sliding notification panel -->
+<div id="mobile-notification-panel" class="mobile-notification-panel d-lg-none" role="dialog" aria-hidden="true">
+    <div class="mobile-notification-panel-header">
+        <strong>Notifications</strong>
+        <button id="close-mobile-notifications" class="notification-close-btn">&times;</button>
+    </div>
+    <div class="mobile-notification-panel-body">
+        <ul id="mobile-notifications-list" class="list-group list-group-flush"></ul>
+    </div>
+</div>
+
+<style>
+    .checked { color: orange; }
+
+    /* Mobile notification styles */
+    .mobile-notification-fab {
+        position: fixed;
+        right: 16px;
+        bottom: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1756a9 0%, #0d3d73 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 18px rgba(23,86,169,0.4);
+        border: none;
+        z-index: 2000;
+        font-size: 1.25rem;
+        overflow: visible;
+    }
+
+    .mobile-notification-count {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border-radius: 50%;
+        background: #ff3b30;
+        color: #fff;
+        font-size: 0.7rem;
+        line-height: 20px;
+        text-align: center;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2001;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    .mobile-notification-panel {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 58%;
+        max-height: 80vh;
+        background: #fff;
+        z-index: 1999;
+        transform: translateY(110%);
+        transition: transform 0.32s cubic-bezier(.2,.8,.2,1), opacity 0.2s ease-in-out;
+        box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        pointer-events: none;
+        opacity: 0;
+    }
+
+    .mobile-notification-panel.open {
+        transform: translateY(0%);
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .mobile-notification-panel-header {
+        background: linear-gradient(135deg, #1756a9 0%, #0d3d73 100%);
+        color: #fff;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mobile-notification-panel-body {
+        padding: 8px 0;
+        overflow-y: auto;
+    }
+
+    @media (min-width: 992px) {
+        .mobile-notification-fab,
+        .mobile-notification-panel {
+            display: none !important;
+        }
+    }
+</style>
+
+<script>
+// Live refresh for notifications
+function fetchRecentNotifications() {
+    fetch('{% url "recent_notifications_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            const list = document.getElementById('recent-notifications-list');
+            const mobileList = document.getElementById('mobile-notifications-list');
+            if (!list && !mobileList) return;
+
+            let html = '';
+            if (data.notifications && data.notifications.length > 0) {
+                // Only render the most recent 5 notifications in the panel
+                const notes = data.notifications.slice(0, 5);
+                notes.forEach(note => {
+                    html += `<li class="list-group-item"><small class="text-muted">${note.created_at}</small><br>${note.message}</li>`;
+                });
+                // Update badge count (based on all notifications, not just displayed)
+                const badge = document.getElementById('mobile-notification-count');
+                if (badge) {
+                    const unreadCount = data.notifications.filter(n => !n.is_read).length;
+                    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                }
+            } else {
+                html = '<li class="list-group-item">No recent notifications.</li>';
+            }
+
+            if (list) list.innerHTML = html;
+            if (mobileList) mobileList.innerHTML = html;
+        });
+}
+
+// Mobile notification panel controls
+document.addEventListener('DOMContentLoaded', function() {
+    const fab = document.getElementById('mobile-notification-fab');
+    const panel = document.getElementById('mobile-notification-panel');
+    const closeBtn = document.getElementById('close-mobile-notifications');
+
+    if (fab) {
+        fab.addEventListener('click', function() {
+            panel.style.display = 'flex';
+            setTimeout(() => {
+                panel.classList.add('open');
+                panel.setAttribute('aria-hidden', 'false');
+            }, 20);
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            panel.classList.remove('open');
+            panel.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            panel.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName === 'transform') {
+                    panel.style.display = 'none';
+                    panel.removeEventListener('transitionend', handler);
+                }
+            });
+        });
+    }
+});
+
+// Start notification refresh
+setInterval(fetchRecentNotifications, 10000);
+document.addEventListener('DOMContentLoaded', fetchRecentNotifications);
+</script>
+
+{% endblock %}

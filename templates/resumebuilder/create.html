@@ -1,0 +1,646 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+  <h2 class="font-weight-bold mb-4 text-primary"><i class="fa fa-user mr-2"></i>Edit Resume</h2>
+
+  {% if form.errors %}
+    <div class="alert alert-danger">
+      <strong>There was a problem saving your resume:</strong>
+      <ul>
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+      <button type="submit" name="action" value="save_personal_info" class="btn btn-secondary mt-3">Save Personal Info Only</button>
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" id="resume-form">{% csrf_token %}
+    <div>
+      {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+          <strong>There were errors in your submission:</strong>
+          <ul class="mb-0">
+            {{ form.errors }}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+    <div class="card p-4 mb-3 bg-light">
+      <div class="d-flex align-items-center mb-2">
+        <span class="fa fa-user fa-lg text-primary mr-2"></span>
+        <span class="h5 mb-0" style="color:#007bff;">Personal Information</span>
+      </div>
+      {# Only show personal info fields, not declaration fields #}
+      <div class="form-row align-items-center">
+        <div class="form-group col-md-6 mb-0">
+          <label for="id_name">Name:</label>
+          {{ form.name }}
+        </div>
+        <div class="form-group col-md-6 mb-0 d-flex align-items-center">
+          <div class="mr-3">
+            <label for="id_img" class="mb-0">Profile Image (Upload):</label>
+            {{ form.img }}
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_email">Email:</label>
+          {{ form.email }}
+        </div>
+        <div class="form-group col-md-6">
+          <label for="id_phone">Phone Number:</label>
+          {{ form.phone }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="id_role">Role:</label>
+        {{ form.role }}
+      </div>
+      <div class="form-group">
+        <label for="id_bio">Bio:</label>
+        {{ form.bio }}
+      </div>
+      <div class="form-group">
+        <label for="id_template_id">Template id:</label>
+        {{ form.template_id }}
+      </div>
+      <button type="submit" name="action" value="save_personal_info" class="btn btn-secondary mt-3">Save Personal Info Only</button>
+    </div>
+  <div class="accordion" id="resumeAccordion">
+    <!-- Skills -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingSkills">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseSkills" aria-expanded="true" aria-controls="collapseSkills">
+            <i class="fa fa-star mr-2"></i>Skills
+          </button>
+        </h5>
+      </div>
+      <div id="collapseSkills" class="collapse show" aria-labelledby="headingSkills" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="skills-list">
+            {% for skill in skills %}
+              <div class="input-group mb-2">
+                <input type="text" class="form-control" name="skills[]" value="{{ skill.name }}" placeholder="Skill">
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove()"><i class="fa fa-trash"></i></button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <button type="button" class="btn btn-orange mt-2" onclick="addSkillInput()"><i class="fa fa-plus"></i> Add Skill</button>
+          <script>
+            function addSkillInput() {
+              var container = document.getElementById('skills-list');
+              var inputDiv = document.createElement('div');
+              inputDiv.className = 'input-group mb-2';
+              inputDiv.innerHTML = `
+                <input type="text" class="form-control" name="skills[]" placeholder="Skill">
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove()"><i class="fa fa-trash"></i></button>
+                </div>
+              `;
+              container.appendChild(inputDiv);
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+    <!-- Education -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingEdu">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseEdu" aria-expanded="false" aria-controls="collapseEdu">
+            <i class="fa fa-book mr-2"></i>Education
+          </button>
+        </h5>
+      </div>
+      <div id="collapseEdu" class="collapse" aria-labelledby="headingEdu" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="education-inputs"></div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-orange flex-grow-1 mr-2" style="background:#ffa726;color:#fff;" onclick="addEducation()">Add <i class="fa fa-plus"></i></button>
+            <button type="button" class="btn btn-warning flex-grow-1" style="background:#ffe0b2;color:#e53935;" onclick="clearEducationInputs()">Clear</button>
+          </div>
+          <ul class="list-group mt-3" id="education-list">
+            {% for edu in education %}
+              <li class="list-group-item d-flex align-items-center">
+                <span class="fa fa-book text-primary mr-2"></span>{{ edu.degree }} at <strong>{{ edu.institution }}</strong> <span class="text-muted ml-2">({{ edu.start_year }}-{{ edu.end_year }})</span>
+                <form method="post" action="{% url 'resumebuilder:delete_edu' resume.id edu.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No education added.</li>
+            {% endfor %}
+          </ul>
+          <script>
+            function createEducationFields() {
+              return `
+                <div class="row" id="edu-fields">
+                  <div class="col-md-4 mb-2">
+                    <input type="text" name="school_name" class="form-control" placeholder="School Name">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" name="course_name" class="form-control" placeholder="Course Name">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" name="place" class="form-control" placeholder="Place">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" name="year_of_completion" class="form-control" placeholder="Year of Completion">
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <input type="text" name="percentage_or_grade" class="form-control" placeholder="Percentage or Grade">
+                  </div>
+                  <div class="col-md-4 mb-2 d-flex align-items-center">
+                    <input type="checkbox" name="completed" id="completed" class="mr-2" style="width:18px;height:18px;">
+                    <label for="completed" class="mb-0">Did you Completed this Course?</label>
+                  </div>
+                </div>
+              `;
+            }
+            function addEducation() {
+              var container = document.getElementById('education-inputs');
+              var fields = container.querySelector('#edu-fields');
+              if (!fields) return;
+              var school = fields.querySelector('input[name="school_name"]').value.trim();
+              var course = fields.querySelector('input[name="course_name"]').value.trim();
+              var place = fields.querySelector('input[name="place"]').value.trim();
+              var year = fields.querySelector('input[name="year_of_completion"]').value.trim();
+              var grade = fields.querySelector('input[name="percentage_or_grade"]').value.trim();
+              var completed = fields.querySelector('input[name="completed"]').checked ? 'Yes' : 'No';
+              if (!school && !course && !place && !year && !grade) return;
+              var list = document.getElementById('education-list');
+              var li = document.createElement('li');
+              li.className = 'list-group-item d-flex align-items-center';
+              li.innerHTML = `<span class='fa fa-book text-primary mr-2'></span>
+                <strong>${school}</strong> - ${course} at ${place} <span class='text-muted ml-2'>(${year})</span> | Grade: ${grade} | Completed: ${completed}
+                <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenEdu(this);'>Delete</button>`;
+              list.appendChild(li);
+              // Add hidden inputs to form
+              var form = document.getElementById('resume-form');
+              var hiddenFields = [
+                ['edu_institution[]', school],
+                ['edu_degree[]', course],
+                ['edu_field[]', place],
+                ['edu_start_year[]', year],
+                ['edu_grade[]', grade]
+              ];
+              hiddenFields.forEach(function(pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                input.className = 'edu-hidden';
+                form.appendChild(input);
+              });
+              container.innerHTML = createEducationFields();
+            }
+            function removeHiddenEdu(btn) {
+              var form = document.getElementById('resume-form');
+              var inputs = form.querySelectorAll('.edu-hidden');
+              for (var i = 0; i < 5; i++) {
+                if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+                inputs = form.querySelectorAll('.edu-hidden');
+              }
+            }
+            function clearEducationInputs() {
+              var container = document.getElementById('education-inputs');
+              container.innerHTML = createEducationFields();
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('education-inputs').innerHTML = createEducationFields();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+    <!-- Achievements -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingAch">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseAch" aria-expanded="false" aria-controls="collapseAch">
+            <i class="fa fa-trophy mr-2"></i>Achievements
+          </button>
+        </h5>
+      </div>
+      <div id="collapseAch" class="collapse" aria-labelledby="headingAch" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="achievement-inputs"></div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-orange flex-grow-1 mr-2" style="background:#ffa726;color:#fff;" onclick="addAchievement()">Add <i class="fa fa-plus"></i></button>
+            <button type="button" class="btn btn-warning flex-grow-1" style="background:#ffe0b2;color:#e53935;" onclick="clearAchievementInputs()">Clear</button>
+          </div>
+          <ul class="list-group mt-3" id="achievement-list">
+            {% for ach in achievements %}
+              <li class="list-group-item d-flex align-items-center">
+                <span class="fa fa-trophy text-primary mr-2"></span>{{ ach.title }} <span class="text-muted ml-2">({{ ach.date }})</span>
+                <form method="post" action="{% url 'resumebuilder:delete_ach' resume.id ach.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No achievements added.</li>
+            {% endfor %}
+          </ul>
+          <script>
+            function createAchievementFields() {
+              return `
+                <div class='row' id='ach-fields'>
+                  <div class='col-md-6 mb-2'>
+                    <input type='text' name='title' class='form-control' placeholder='Title'>
+                  </div>
+                  <div class='col-md-3 mb-2'>
+                    <input type='text' name='place' class='form-control' placeholder='Place'>
+                  </div>
+                  <div class='col-md-3 mb-2'>
+                    <input type='date' name='date' class='form-control' placeholder='Date'>
+                  </div>
+                  <div class='col-12 mb-2'>
+                    <textarea name='description' class='form-control' placeholder='Description'></textarea>
+                  </div>
+                </div>
+              `;
+            }
+            function addAchievement() {
+              var container = document.getElementById('achievement-inputs');
+              var fields = container.querySelector('#ach-fields');
+              if (!fields) return;
+              var title = fields.querySelector('input[name="title"]').value.trim();
+              var place = fields.querySelector('input[name="place"]').value.trim();
+              var date = fields.querySelector('input[name="date"]').value.trim();
+              var desc = fields.querySelector('textarea[name="description"]').value.trim();
+              if (!title && !place && !date && !desc) return;
+              var list = document.getElementById('achievement-list');
+              var li = document.createElement('li');
+              li.className = 'list-group-item d-flex align-items-center';
+              li.innerHTML = `<span class='fa fa-trophy text-primary mr-2'></span>
+                <strong>${title}</strong> at ${place} <span class='text-muted ml-2'>(${date})</span> <span class='ml-2'>${desc}</span>
+                <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenAch(this);'>Delete</button>`;
+              list.appendChild(li);
+              // Add hidden inputs to form
+              var form = document.getElementById('resume-form');
+              var hiddenFields = [
+                ['ach_title[]', title],
+                ['ach_description[]', desc],
+                ['ach_date[]', date]
+              ];
+              hiddenFields.forEach(function(pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                input.className = 'ach-hidden';
+                form.appendChild(input);
+              });
+              container.innerHTML = createAchievementFields();
+            }
+            function removeHiddenAch(btn) {
+              var form = document.getElementById('resume-form');
+              var inputs = form.querySelectorAll('.ach-hidden');
+              for (var i = 0; i < 3; i++) {
+                if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+                inputs = form.querySelectorAll('.ach-hidden');
+              }
+            }
+            function clearAchievementInputs() {
+              var container = document.getElementById('achievement-inputs');
+              container.innerHTML = createAchievementFields();
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('achievement-inputs').innerHTML = createAchievementFields();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+    <!-- Projects -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingPro">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapsePro" aria-expanded="false" aria-controls="collapsePro">
+            <i class="fa fa-project-diagram mr-2"></i>Projects
+          </button>
+        </h5>
+      </div>
+      <div id="collapsePro" class="collapse" aria-labelledby="headingPro" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="project-inputs"></div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-orange flex-grow-1 mr-2" style="background:#ffa726;color:#fff;" onclick="addProject()">Add <i class="fa fa-plus"></i></button>
+            <button type="button" class="btn btn-warning flex-grow-1" style="background:#ffe0b2;color:#e53935;" onclick="clearProjectInputs()">Clear</button>
+          </div>
+          <ul class="list-group mt-3" id="project-list">
+            {% for pro in projects %}
+              <li class="list-group-item d-flex align-items-center">
+                <span class="fa fa-project-diagram text-primary mr-2"></span>{{ pro.name }} {% if pro.link %}<a href="{{ pro.link }}" target="_blank" class="ml-2">[Link]</a>{% endif %}
+                <form method="post" action="{% url 'resumebuilder:delete_pro' resume.id pro.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No projects added.</li>
+            {% endfor %}
+          </ul>
+          <script>
+            function createProjectFields() {
+              return `
+                <div class='row' id='pro-fields'>
+                  <div class='col-md-6 mb-2'>
+                    <input type='text' name='project_entry_name' class='form-control' placeholder='Project Name'>
+                  </div>
+                  <div class='col-md-6 mb-2'>
+                    <input type='text' name='link' class='form-control' placeholder='Project Link (optional)'>
+                  </div>
+                  <div class='col-12 mb-2'>
+                    <textarea name='description' class='form-control' placeholder='Description'></textarea>
+                  </div>
+                </div>
+              `;
+            }
+            function addProject() {
+              var container = document.getElementById('project-inputs');
+              var fields = container.querySelector('#pro-fields');
+              if (!fields) return;
+              var name = fields.querySelector('input[name="project_entry_name"]').value.trim();
+              var link = fields.querySelector('input[name="link"]').value.trim();
+              var desc = fields.querySelector('textarea[name="description"]').value.trim();
+              if (!name && !link && !desc) return;
+              var list = document.getElementById('project-list');
+              var li = document.createElement('li');
+              li.className = 'list-group-item d-flex align-items-center';
+              var linkHtml = link ? `<a href='${link}' target='_blank' class='ml-2'>[Link]</a>` : '';
+              li.innerHTML = `<span class='fa fa-project-diagram text-primary mr-2'></span>
+                <strong>${name}</strong> ${linkHtml} <span class='ml-2'>${desc}</span>
+                <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenPro(this);'>Delete</button>`;
+              list.appendChild(li);
+              // Add hidden inputs to form
+              var form = document.getElementById('resume-form');
+              var hiddenFields = [
+                ['pro_name[]', name],
+                ['pro_description[]', desc],
+                ['pro_link[]', link]
+              ];
+              hiddenFields.forEach(function(pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                input.className = 'pro-hidden';
+                form.appendChild(input);
+              });
+              container.innerHTML = createProjectFields();
+            }
+            function removeHiddenPro(btn) {
+              var form = document.getElementById('resume-form');
+              var inputs = form.querySelectorAll('.pro-hidden');
+              for (var i = 0; i < 3; i++) {
+                if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+                inputs = form.querySelectorAll('.pro-hidden');
+              }
+            }
+            function clearProjectInputs() {
+              var container = document.getElementById('project-inputs');
+              container.innerHTML = createProjectFields();
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('project-inputs').innerHTML = createProjectFields();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+    <!-- Socials -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingSoc">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseSoc" aria-expanded="false" aria-controls="collapseSoc">
+            <i class="fa fa-link mr-2"></i>Socials
+          </button>
+        </h5>
+      </div>
+      <div id="collapseSoc" class="collapse" aria-labelledby="headingSoc" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="social-inputs"></div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-orange flex-grow-1 mr-2" style="background:#ffa726;color:#fff;" onclick="addSocial()">Add <i class="fa fa-plus"></i></button>
+            <button type="button" class="btn btn-warning flex-grow-1" style="background:#ffe0b2;color:#e53935;" onclick="clearSocialInputs()">Clear</button>
+          </div>
+          <ul class="list-group mt-3" id="social-list">
+            {% for soc in socials %}
+              <li class="list-group-item d-flex align-items-center">
+                <span class="fa fa-link text-primary mr-2"></span>{{ soc.platform }}: <a href="{{ soc.url }}" target="_blank" class="ml-2">{{ soc.url }}</a>
+                <form method="post" action="{% url 'resumebuilder:delete_soc' resume.id soc.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No socials added.</li>
+            {% endfor %}
+          </ul>
+          <script>
+            function createSocialFields() {
+              return `
+                <div class='row' id='soc-fields'>
+                  <div class='col-md-6 mb-2'>
+                    <select name='platform' class='form-control'>
+                      <option value='Linkedin'>Linkedin</option>
+                      <option value='Github'>Github</option>
+                      <option value='Facebook'>Facebook</option>
+                      <option value='Instagram'>Instagram</option>
+                      <option value='X'>X</option>
+                      <option value='Others'>Others</option>
+                    </select>
+                  </div>
+                  <div class='col-md-6 mb-2'>
+                    <input type='text' name='url' class='form-control' placeholder='Profile URL'>
+                  </div>
+                </div>
+              `;
+            }
+            function addSocial() {
+              var container = document.getElementById('social-inputs');
+              var fields = container.querySelector('#soc-fields');
+              if (!fields) return;
+              var platform = fields.querySelector('select[name="platform"]').value;
+              var url = fields.querySelector('input[name="url"]').value.trim();
+              if (!platform && !url) return;
+              var list = document.getElementById('social-list');
+              var li = document.createElement('li');
+              li.className = 'list-group-item d-flex align-items-center';
+              li.innerHTML = `<span class='fa fa-link text-primary mr-2'></span>
+                <strong>${platform}</strong>: <a href='${url}' target='_blank' class='ml-2'>${url}</a>
+                <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenSoc(this);'>Delete</button>`;
+              list.appendChild(li);
+              // Add hidden inputs to form
+              var form = document.getElementById('resume-form');
+              var hiddenFields = [
+                ['soc_platform[]', platform],
+                ['soc_url[]', url]
+              ];
+              hiddenFields.forEach(function(pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                input.className = 'soc-hidden';
+                form.appendChild(input);
+              });
+              container.innerHTML = createSocialFields();
+            }
+            function removeHiddenSoc(btn) {
+              var form = document.getElementById('resume-form');
+              var inputs = form.querySelectorAll('.soc-hidden');
+              for (var i = 0; i < 2; i++) {
+                if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+                inputs = form.querySelectorAll('.soc-hidden');
+              }
+            }
+            function clearSocialInputs() {
+              var container = document.getElementById('social-inputs');
+              container.innerHTML = createSocialFields();
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('social-inputs').innerHTML = createSocialFields();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+    <!-- Languages -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingLang">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseLang" aria-expanded="false" aria-controls="collapseLang">
+            <i class="fa fa-globe mr-2"></i>Languages
+          </button>
+        </h5>
+      </div>
+      <div id="collapseLang" class="collapse" aria-labelledby="headingLang" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div id="language-inputs"></div>
+          <div class="d-flex mt-2">
+            <button type="button" class="btn btn-orange flex-grow-1 mr-2" style="background:#ffa726;color:#fff;" onclick="addLanguage()">Add <i class="fa fa-plus"></i></button>
+            <button type="button" class="btn btn-warning flex-grow-1" style="background:#ffe0b2;color:#e53935;" onclick="clearLanguageInputs()">Clear</button>
+          </div>
+          <ul class="list-group mt-3" id="language-list">
+            {% for lang in languages %}
+              <li class="list-group-item d-flex align-items-center">
+                <span class="fa fa-globe text-primary mr-2"></span>{{ lang.name }} <span class="text-muted ml-2">({{ lang.proficiency }})</span>
+                <form method="post" action="{% url 'resumebuilder:delete_lang' resume.id lang.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+              </li>
+            {% empty %}
+              <li class="list-group-item text-muted">No languages added.</li>
+            {% endfor %}
+          </ul>
+          <script>
+            function createLanguageFields() {
+              return `
+                <div class='row' id='lang-fields'>
+                  <div class='col-md-6 mb-2'>
+                    <input type='text' name='language' class='form-control' placeholder='Eg ., Tamil'>
+                  </div>
+                  <div class='col-md-6 mb-2'>
+                    <select name='proficiency' class='form-control'>
+                      <option value=''>--------</option>
+                      <option value='Native'>Native</option>
+                      <option value='Professional'>Professional</option>
+                      <option value='Fluent'>Fluent</option>
+                      <option value='Limited Proficiency'>Limited Proficiency</option>
+                    </select>
+                  </div>
+                </div>
+              `;
+            }
+            function addLanguage() {
+              var container = document.getElementById('language-inputs');
+              var fields = container.querySelector('#lang-fields');
+              if (!fields) return;
+              var language = fields.querySelector('input[name="language"]').value.trim();
+              var proficiency = fields.querySelector('select[name="proficiency"]').value;
+              if (!language && !proficiency) return;
+              var list = document.getElementById('language-list');
+              var li = document.createElement('li');
+              li.className = 'list-group-item d-flex align-items-center';
+              li.innerHTML = `<span class='fa fa-globe text-primary mr-2'></span>
+                <strong>${language}</strong> <span class='text-muted ml-2'>(${proficiency})</span>
+                <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenLang(this);'>Delete</button>`;
+              list.appendChild(li);
+              // Add hidden inputs to form
+              var form = document.getElementById('resume-form');
+              var hiddenFields = [
+                ['lang_name[]', language],
+                ['lang_proficiency[]', proficiency]
+              ];
+              hiddenFields.forEach(function(pair) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = pair[0];
+                input.value = pair[1];
+                input.className = 'lang-hidden';
+                form.appendChild(input);
+              });
+              container.innerHTML = createLanguageFields();
+            }
+            function removeHiddenLang(btn) {
+              var form = document.getElementById('resume-form');
+              var inputs = form.querySelectorAll('.lang-hidden');
+              for (var i = 0; i < 2; i++) {
+                if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+                inputs = form.querySelectorAll('.lang-hidden');
+              }
+            }
+            function clearLanguageInputs() {
+              var container = document.getElementById('language-inputs');
+              container.innerHTML = createLanguageFields();
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('language-inputs').innerHTML = createLanguageFields();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+
+    <!-- Declaration Section -->
+    <div class="card mb-3">
+      <div class="card-header bg-white" id="headingDeclaration">
+        <h5 class="mb-0">
+          <button class="btn btn-link text-primary" type="button" data-toggle="collapse" data-target="#collapseDeclaration" aria-expanded="false" aria-controls="collapseDeclaration">
+            <i class="fa fa-file-signature mr-2"></i>Declaration
+          </button>
+        </h5>
+      </div>
+      <div id="collapseDeclaration" class="collapse" aria-labelledby="headingDeclaration" data-parent="#resumeAccordion">
+        <div class="card-body bg-light">
+          <div class="form-group">
+            <label for="id_declaration_text">Declaration Text</label>
+            {{ form.declaration_text }}
+          </div>
+          <div class="form-group">
+            <label for="id_declaration_signature">Signature Image (optional)</label>
+            {{ form.declaration_signature }}
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="id_declaration_place">Place</label>
+              {{ form.declaration_place }}
+            </div>
+            <div class="form-group col-md-6">
+              <label for="id_declaration_date">Date</label>
+              {{ form.declaration_date }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <h5>Note : before preview the resume , save the resume</h5>
+    <div class="d-flex justify-content-end mt-4">
+      <a href="{% url 'resumebuilder:resume_templates' resume.id %}" class="btn btn-orange floating-save no-print mr-2"><i class="fa fa-eye mr-2"></i>Preview Resume</a>
+      <button type="submit" class="btn btn-orange floating-save no-print"><i class="fa fa-save mr-2"></i>Save Resume</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

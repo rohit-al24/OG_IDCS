@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+{% block root %}
+<div class="container mt-4">
+    <h3>Staff Attendance - Assigned Subjects</h3>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if subjects_with_students %}
+        {% for item in subjects_with_students %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>{{ item.subject.name }}</strong> - Semester: {{ item.subject.semester.semester }}<br>
+                    Department: {{ item.subject.semester.department.name }}
+                </div>
+                <div class="card-body">
+                    {% for section, students in item.section_students %}
+                        <div class="mb-2">
+                            <strong>Section:
+                                {% if section == 2 %}A{% elif section == 3 %}B{% elif section == 4 %}C{% elif section == 0 %}AI&ML{% elif section == 1 %}AI&DS{% else %}{{ section }}{% endif %}
+                            </strong>
+                        </div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary mb-3">Submit Attendance</button>
+                            <div class="mb-3">
+                                <label for="attendance_date_{{ item.subject.id }}_{{ section }}" class="form-label">Select Date:</label>
+                                <input type="date" id="attendance_date_{{ item.subject.id }}_{{ section }}" name="attendance_date_{{ item.subject.id }}_{{ section }}" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="absent_last3_{{ item.subject.id }}_{{ section }}" class="form-label">Enter last 3 digits of roll numbers to mark absent:</label>
+                                <input type="text" id="absent_last3_{{ item.subject.id }}_{{ section }}" name="absent_last3_{{ item.subject.id }}_{{ section }}" class="form-control" placeholder="e.g. 123, 456, 789">
+                                <small class="form-text text-muted">Separate multiple values with commas or spaces. Example: 123 456 789</small>
+                            </div>
+                            <style>
+                                /* Reuse OD/leaves responsive table style for attendance */
+                                .od-table { width:100%; margin-top:12px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow-x:auto; }
+                                .od-table-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#1976d2; color:#fff; font-weight:600; border-top-left-radius:8px; border-top-right-radius:8px; }
+                                .od-divider { margin:0; border:0; height:2px; background:linear-gradient(to right,#e0e7ff,#e0e0e0); }
+                                .od-table table { width:100%; border-collapse:collapse; table-layout: fixed; margin:0; }
+                                .od-table thead th { background:#f5f7fa; color:#2c3e50; font-weight:600; padding:10px; text-align:center; border-bottom:1px solid #e6eef6; }
+                                .od-table tbody tr { transition:background 0.12s ease; }
+                                .od-table tbody tr:nth-child(even) { background:#fbfdff; }
+                                .od-table tbody tr:hover { background:#f1f5f9; }
+                                .od-table td, .od-table th { padding:8px; border:1px solid #e8f0f6; vertical-align:middle; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; text-align:center; }
+                                @media (max-width:768px) {
+                                    .od-table { padding:8px; }
+                                    .od-table table { display:block; width:100%; }
+                                    .od-table thead { display:none; }
+                                    .od-table tbody { display:block; width:100%; padding:0; margin:0; }
+                                    .od-table tbody tr { display:block; width:100%; border:1px solid #e6eef6; margin:0 0 6px 0; border-radius:6px; padding:8px; background:#fff; box-sizing:border-box; }
+                                    .od-table td { display:block; padding:6px 0; border:none; border-bottom:1px solid #f1f5f9; white-space:normal; box-sizing:border-box; font-size:0.92rem; }
+                                    .od-table td::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+                                    .od-table td:last-child { border-bottom:none; }
+                                    .od-table select.form-control { width:100%; }
+                                }
+                            </style>
+
+                            <div class="od-table">
+                                <div class="od-table-header"><span class="header-title">Attendance List</span></div>
+                                <hr class="od-divider">
+                                <table class="table table-bordered table-striped mt-3">
+                                    <thead>
+                                        <tr>
+                                            <th>Roll Number</th>
+                                            <th>Name</th>
+                                            <th>Year</th>
+                                            <th>Section</th>
+                                            <th>Subject Attendance %</th>
+                                            <th>Overall Attendance %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in students %}
+                                        <tr>
+                                            <td data-label="Roll Number">{{ entry.student.roll }}</td>
+                                            <td data-label="Name">{{ entry.student.name }}</td>
+                                            <td data-label="Year">{{ entry.student.year }}</td>
+                                            <td data-label="Section">{% if entry.student.section == 2 %}A{% elif entry.student.section == 3 %}B{% elif entry.student.section == 4 %}C{% elif entry.student.section == 0 %}AI&ML{% elif entry.student.section == 1 %}AI&DS{% else %}{{ entry.student.section }}{% endif %}</td>
+                                            <td data-label="Subject Attendance %">{{ entry.percentage }}%</td>
+                                            <td data-label="Overall Attendance %">{% if student_percentages and entry.student.id %}{{ student_percentages|dict_get:entry.student.id|default:0|floatformat:1 }}%{% else %}N/A{% endif %}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No subjects assigned.</p>
+    {% endif %}
+</div>
+{% endblock %}

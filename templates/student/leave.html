@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block root %}
+<style>
+/* Card style */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+    border: none;
+}
+
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* title left, icon right */
+    padding: 14px 20px;
+}
+
+.card-header .header-title {
+    margin: 0;
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+/* Input group style */
+.input-group-addon {
+    background: #2196f3 !important;
+    color: #fff !important;
+    font-weight: 600;
+    border: none !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+}
+
+.input-group .form-control[disabled],
+.input-group .form-control:disabled {
+    background: #e3f2fd !important;
+    color: #333 !important;
+    border: none !important;
+    font-weight: 600;
+    border-radius: 0 0.25rem 0.25rem 0 !important;
+}
+
+/* Form controls */
+.form-control, textarea {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+textarea { resize: vertical; }
+
+/* File upload button */
+input[type="file"] { display: none; }
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 8px 16px;
+    cursor: pointer;
+    background: #1976d2;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.custom-file-upload:hover { background: #1565c0; }
+
+/* Buttons */
+.btn-submit {
+    background: #4caf50;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+.btn-submit:hover { background: #388e3c; }
+
+.btn-reset {
+    background: #fff;
+    border: 2px solid #f44336;
+    color: #f44336;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+.btn-reset:hover { background: #f44336; color: #fff; }
+
+/* Responsive */
+@media (max-width: 767px) {
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Keep header row layout on mobile */
+    .card-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0;
+    }
+}
+</style>
+
+<div class="animated fadeIn" style="margin-top: 16px;">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <!-- Card Header like OD page -->
+                <div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+                    <span class="header-title">Leave Application</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <form enctype="multipart/form-data" method="post">
+                        {% csrf_token %}
+
+                        <!-- Username -->
+                        <div class="form-group mb-3">
+                            <div class="input-group">
+                                <div class="input-group-addon"><i class="fa fa-user"></i></div>
+                                <input type="text" disabled name="username" value="{{ user.username }}" class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- Mentors/Advisors -->
+                        <div class="row mb-3">
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Mentor</div>
+                                    <input type="text" disabled value="Mr/Mrs. {{ duser.mentor.name }}" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Advisor</div>
+                                    <input type="text" disabled value="Mr/Mrs. {{ duser.advisor.name }}" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">AHOD</div>
+                                    <input type="text" disabled value="{% if duser.ahod %}Mr/Mrs. {{ duser.ahod.user.name }}{% endif %}" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="input-group">
+                                    <div class="input-group-addon">HOD</div>
+                                    <input type="text" disabled value="Mr/Mrs. {{ duser.hod.name }}" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="form-group mb-3">
+                            <input type="text" name="sub" placeholder="Subject" required class="form-control">
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="form-group mb-3">
+                            <textarea name="reason" placeholder="Leave Details" required class="form-control" rows="6"></textarea>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-2">
+                                <label>From:</label>
+                                <input type="datetime-local" name="from" required class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label>To:</label>
+                                <input type="datetime-local" name="to" required class="form-control">
+                            </div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="form-group mb-3">
+                            <label for="proof">Upload Proof (PDF, JPG, PNG) (Optional):</label><br>
+                            <label class="custom-file-upload">
+                                <input type="file" name="proof" id="proof"/>
+                                Choose File
+                            </label>
+                            <span id="file-name" style="margin-left:10px; font-weight:500;">No file chosen</span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="btn-group mt-3" style="width:100%;">
+                            <button type="submit" class="btn btn-submit mr-2 col-md-8">Submit</button>
+                            <button type="reset" class="btn btn-reset col-md-4">Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('proof');
+    const fileName = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', () => {
+        fileName.textContent = fileInput.files[0]?.name || 'No file chosen';
+    });
+</script>
+{% endblock %}

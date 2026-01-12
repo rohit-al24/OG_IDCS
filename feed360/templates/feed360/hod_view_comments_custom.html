@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <h2>All Feedback Comments for: {{ custom_staff_name }}</h2>
+    {% if comments %}
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Form Title</th>
+                <th>Question</th>
+                <th>Comment</th>
+                <th>Student</th>
+                <th>Submitted At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in comments %}
+            <tr>
+                <td>{{ c.form_title }}</td>
+                <td>{{ c.question_text }}</td>
+                <td>{{ c.comment }}</td>
+                <td>{{ c.student }}</td>
+                <td>{{ c.submitted_at|date:'Y-m-d H:i' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No comments found for this staff.</div>
+    {% endif %}
+</div>
+{% endblock %}

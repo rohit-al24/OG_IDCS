@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+{% block root %}
+<h3>My Timetable</h3>
+<form method="post" id="my-timetable-form">
+    {% csrf_token %}
+    <button type="button" id="my-edit-btn" class="btn btn-secondary mb-2" onclick="toggleMyEdit()">Edit</button>
+    <button type="submit" id="my-save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Day / Period</th>
+                {% for p in periods %}
+                    <th>{{ p }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days %}
+            <tr>
+                <td><b>{{ day }}</b></td>
+                {% for p in periods %}
+                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                        <td>
+                            <input type="text" name="my_{{ key }}" value="{{ my_table|dict_get:key }}" class="form-control my-timetable-input" readonly>
+                        </td>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+<script>
+function toggleMyEdit() {
+    const inputs = document.querySelectorAll('.my-timetable-input');
+    const editBtn = document.getElementById('my-edit-btn');
+    const saveBtn = document.getElementById('my-save-btn');
+    if (editBtn.innerText === 'Edit') {
+        inputs.forEach(i => i.removeAttribute('readonly'));
+        editBtn.innerText = 'Cancel';
+        saveBtn.style.display = '';
+    } else {
+        inputs.forEach(i => i.setAttribute('readonly', true));
+        editBtn.innerText = 'Edit';
+        saveBtn.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

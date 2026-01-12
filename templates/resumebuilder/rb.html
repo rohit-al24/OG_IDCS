@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="font-weight-bold">My Resumes</h2>
+  <form method="post" class="mb-0">{% csrf_token %}
+    <button type="submit" class="btn btn-gradient btn-lg shadow">Create Resume</button>
+  </form>
+</div>
+<div class="resume-grid">
+  {% for resume in resumes %}
+    <div class="resume-card card p-3 mb-4">
+      <div class="d-flex align-items-center mb-2">
+        <img src="{{ resume.profile.url|default:'/static/images/dp.jpg' }}" class="rounded-circle mr-3" width="56" height="56" alt="Profile">
+        <div>
+          <h5 class="mb-0">{{ resume.role }}</h5>
+          <small class="text-muted">Created: {{ resume.created_at|date:'Y-m-d' }}</small>
+        </div>
+      </div>
+      <div class="mt-2 d-flex justify-content-end">
+        <a href="{% url 'resumebuilder:create_resume' resume.id %}" class="btn btn-outline-primary btn-sm mx-1"><i class="fa fa-pencil"></i> Edit</a>
+        <a href="{% url 'resumebuilder:resume_templates' resume.id %}" class="btn btn-outline-info btn-sm mx-1"><i class="fa fa-eye"></i> Preview</a>
+        <!-- Only keep the working form-based delete button -->
+        <form method="post" action="{% url 'resumebuilder:delete_resume' resume.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm mx-1"><i class="fa fa-trash"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="text-center text-muted py-5">No resumes found. Click "Create Resume" to get started!</div>
+  {% endfor %}
+</div>
+{% endblock %}

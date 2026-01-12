@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Staff Members in {{ department.name }}</h2>
+{% if staff_list %}
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_list %}
+                <tr>
+                    <td>{{ staff.name }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>{{ staff.mobile }}</td>
+                    <td>{{ staff.role }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">No staff found in this department.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No staff found in this department.</p>
+{% endif %}
+{% endblock %}

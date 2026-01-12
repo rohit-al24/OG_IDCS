@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Leave's Status for {{ student.name }} ({{ student.roll_no }})</h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Mentor</th>
+            <th>Advisor</th>
+            <th>AHOD</th>
+            <th>HOD</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if leave_records %}
+            {% for leave in leave_records %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ leave.sub }}</td>
+                <td>
+                    {% if leave.user.mentor %}
+                        {{ leave.user.mentor.name }}<br>
+                        <small>{{ leave.user.mentor.department.name }}</small><br>
+                    {% endif %}
+                    {% if leave.Mstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif leave.Mstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif leave.Mstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ leave.Mstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if leave.user.advisor %}
+                        {{ leave.user.advisor.name }}<br>
+                        <small>{{ leave.user.advisor.department.name }}</small><br>
+                    {% endif %}
+                    {% if leave.Astatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif leave.Astatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif leave.Astatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ leave.Astatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if leave.user.ahod %}
+                        {{ leave.user.ahod.name }}<br>
+                        <small>{{ leave.user.ahod.department.name }}</small><br>
+                    {% endif %}
+                    {% if leave.AHstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif leave.AHstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif leave.AHstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ leave.AHstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if leave.user.hod %}
+                        {{ leave.user.hod.name }}<br>
+                        <small>{{ leave.user.hod.department.name }}</small><br>
+                    {% endif %}
+                    {% if leave.Hstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif leave.Hstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif leave.Hstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ leave.Hstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if leave.Hstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 4px 12px; border-radius: 6px;">Approved</span>
+                    {% elif leave.Hstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 4px 12px; border-radius: 6px;">Pending</span>
+                    {% elif leave.Hstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 4px 12px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ leave.Hstatus }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="7">No Leave Records Found</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Bonafide Status for {{ student.name }} ({{ student.roll_no }})</h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Mentor</th>
+            <th>Advisor</th>
+            <th>HOD</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if bonafide_records %}
+            {% for bf in bonafide_records %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ bf.sub }}</td>
+                <td>
+                    {% if bf.user.mentor %}
+                        {{ bf.user.mentor.name }}<br>
+                        <small>{{ bf.user.mentor.department.name }}</small><br>
+                    {% endif %}
+                    {% if bf.Mstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif bf.Mstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif bf.Mstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ bf.Mstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if bf.user.advisor %}
+                        {{ bf.user.advisor.name }}<br>
+                        <small>{{ bf.user.advisor.department.name }}</small><br>
+                    {% endif %}
+                    {% if bf.Astatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif bf.Astatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif bf.Astatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ bf.Astatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if bf.user.hod %}
+                        {{ bf.user.hod.name }}<br>
+                        <small>{{ bf.user.hod.department.name }}</small><br>
+                    {% endif %}
+                    {% if bf.Hstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif bf.Hstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif bf.Hstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ bf.Hstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if bf.Mstatus == 'Approved' and bf.Astatus == 'Approved' and bf.Hstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 4px 12px; border-radius: 6px;">Approved</span>
+                    {% elif bf.Mstatus == 'Pending' or bf.Astatus == 'Pending' or bf.Hstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 4px 12px; border-radius: 6px;">Pending</span>
+                    {% elif bf.Mstatus == 'Rejected' or bf.Astatus == 'Rejected' or bf.Hstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 4px 12px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ bf.Mstatus }} / {{ bf.Astatus }} / {{ bf.Hstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#bfModal{{ bf.id }}">View Details</button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="bfModal{{ bf.id }}" tabindex="-1" role="dialog" aria-labelledby="bfModalLabel{{ bf.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Bonafide Details</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body" style="max-height:80vh; overflow-y:auto;">
+                                    <div style="padding:1rem; text-align:left;">
+                                        <p style="white-space:pre-wrap;">{{ bf.body }}</p>
+                                        {% if bf.proof %}
+                                        <div style="margin-top:1rem; display:flex; justify-content:center;">
+                                            {% if ".pdf" in bf.proof.url|lower %}
+                                            <iframe src="{{ bf.proof.url }}" style="width:100%; height:60vh; border:none;"></iframe>
+                                            {% else %}
+                                            <img src="{{ bf.proof.url }}" alt="Proof" style="max-width:100%; max-height:60vh; object-fit:contain;" />
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="7">No Bonafide Records Found</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

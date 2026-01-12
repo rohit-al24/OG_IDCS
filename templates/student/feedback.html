@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block root %}
+<style>
+    /* Card style */
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        background: #1976d2;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.2rem;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+        text-align: center;
+    }
+
+    /* Table styling */
+    .table thead th {
+        background: #fff !important;
+        color: #222 !important;
+        font-weight: 700;
+        border-color: #1976d2 !important;
+        text-align: center;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    table tr[tabindex] {
+        outline: none;
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    table tr:hover {
+        background: #e3f2fd !important;
+    }
+
+    /* Badge style */
+    .badge {
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .badge-Approved {
+        background-color: #4caf50;
+    }
+
+    .badge-Pending {
+        background-color: #ff9800;
+    }
+
+    /* Responsive */
+    @media (max-width: 767px) {
+        .table thead {
+            display: none;
+        }
+        .table tbody td {
+            display: block;
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+        }
+        .table tbody td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0;
+            width: 50%;
+            padding-left: 15px;
+            font-weight: 700;
+            text-align: left;
+        }
+    }
+</style>
+
+{% if s_rating %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                Feedback Table
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in s_rating %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+                            <td>Mr/Mr/Mrs.. {{i.name}}</td>
+                            <td><a href="{% url 'student_feedback_form' i.id 'gen' %}">Give Feedback</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<p>Feedback is Disabled</p>
+{% endif %}
+
+{% if spf_staff %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                Feedback Table
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in spf_staff %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+                            <td>Mr/Mr/Mrs.. {{i.name}}</td>
+                            <td><a href="{% url 'student_feedback_form' i.id 'spf' %}">Give Feedback</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if cs_rating %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                Completed Feedback
+            </div>
+            <div class="table-stats order-table ov-h">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th class="serial">#</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in cs_rating %}
+                        <tr>
+                            <td>#{{i.user.username}}</td>
+                            <td>Mr/Mr/Mrs.. {{i.name}}</td>
+                            <td><span class="badge badge-Approved">Completed</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

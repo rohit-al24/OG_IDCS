@@ -1,0 +1,12 @@
+
+<ul class="list-group">
+  {% for edu in education %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-primary mr-2"><i class="fa fa-school"></i></span>
+      {{ edu.degree }} at <strong>{{ edu.institution }}</strong> <span class="text-muted">({{ edu.start_year }}-{{ edu.end_year }})</span>
+      <button hx-post="{% url 'resumebuilder:delete_edu' edu.resume.id edu.id %}" hx-target="#edu-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No education added.</li>
+  {% endfor %}
+</ul>

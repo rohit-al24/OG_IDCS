@@ -1,0 +1,8 @@
+user,roll,name,department,semester,year,section,address,mobile,parent_mobile,dob,age
+<<<<<<< HEAD
+230381,1001,John Smith,001,1,1,2,"123 Main St",9876543210,9876543211,2005-01-01,20
+230382,1002,Jane Doe,002,2,2,1,"456 Elm St",9876543222,9876543223,2004-12-12,21
+=======
+johnsmith,1001,John Smith,001,1,1,2,"123 Main St",9876543210,9876543211,2005-01-01,20
+janedoe,1002,Jane Doe,002,2,2,1,"456 Elm St",9876543222,9876543223,2004-12-12,21
+>>>>>>> hari

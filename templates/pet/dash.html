@@ -1,0 +1,52 @@
+{% extends 'pet/base.html' %}
+{% load static %}
+
+{% block pet_content %}
+{# Header Card with College and User Info #}
+<div class="row">
+    <div class="col-12 d-flex justify-content-center align-items-center">
+        <div class="card mb-4 w-100">
+            <div class="card-body d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <div class="d-flex flex-column flex-md-row align-items-center w-80">
+                    <div class="pr-4 d-flex align-items-center">
+                        <img src="{% static 'images/logo-1.png' %}" alt="K. Ramakrishnan College of Technology Logo" class="img-fluid" style="max-width: 100px; height: auto;">
+                    </div>
+                    <div class="d-flex flex-column align-items-start w-100">
+                        <h3 class="card-title mb-1 text-center text-md-left" style="font-weight: bold; color: #1756a9;">K. Ramakrishnan College of Technology</h3>
+                        <div class="text-center text-md-left" style="font-size: 1.2rem; color: #d32f2f; font-weight: bold;">Autonomous</div>
+                        <hr class="my-2 w-100">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                    <div class="mt-3 mt-md-0 text-center">
+                        {% if duser.profile %}
+                            <img src="{{ duser.profile.url }}" alt="Profile" class="rounded-circle" width="60" height="60">
+                        {% else %}
+                            <img src="/static/images/dp.jpg" alt="Default Profile" class="rounded-circle" width="60" height="60">
+                        {% endif %}
+                    </div>
+                    <div class="mt-3 mt-md-0 text-left text-md-left">
+                        <strong>Staff ID:</strong> {{ duser.user.username }}<br>
+                        <strong>Name:</strong> {{ duser.name }}<br>
+                        <strong>User:</strong> PET Staff
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Dashboard Content #}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <p class="lead">Welcome, {{ duser.name }}.</p>
+                <p>Use the links below or the sidebar to manage Sports OD applications.</p>
+                <a href="{% url 'pet_sports_od_apply' %}" class="btn btn-primary">Apply for Sports OD</a>
+                <a href="{% url 'pet_sports_od_status' %}" class="btn btn-info">View Sports OD Status</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

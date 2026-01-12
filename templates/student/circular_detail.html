@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4 circular-page-bg">
+    <style>
+        /* Circular colour accents */
+        .circular-to-card {
+            background: #e8fef0; /* light green */
+            border-left: 4px solid #2e7d32; /* green accent */
+        }
+        .circular-from-card {
+            background: #fff7e6; /* light orange */
+            border-left: 4px solid #ef6c00; /* orange accent */
+        }
+    </style>
+    <style>
+        /* Page/card backgrounds */
+        .circular-page-bg { background: #f4f7fb; padding: 1.25rem; }
+        .circular-card { background: #ffffff; }
+        .circular-body-card { background: #e8f4ff; border-left: 4px solid #2b5fb3; border-radius:6px; }
+    </style>
+    <article class="circular-card p-4 border rounded shadow-sm">
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <div>
+                    <div class="h6 mb-1 font-weight-bold" >Ref: <strong>{% if circular.reference_no %}{{ circular.reference_no }}{% else %}CIRC/{{ circular.id }}{% endif %}</strong></div>
+                    {# subject removed per request #}
+
+                    
+                </div>
+            </div>
+            <div class="col-md-4 ">
+                <div class="text-right text-weight-bold">
+                    {% if circular.publish_date %}
+                        <div>{{ circular.publish_date|date:"d M Y" }}</div>
+                    {% elif circular.created %}
+                        <div> {{ circular.created|date:"d M Y" }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="border p-3 h-100 circular-to-card">
+                    <strong class="mb-1">To</strong>
+                    <div class="font-weight">{{ circular.to_text|default:circular.get_target_display }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border p-3 h-100 text-left circular-from-card">
+                    <strong class="mb-1">From</strong>
+                    <div class="font-weight">{{ circular.from_text|default:circular.created_by.name }}</div>
+                    {% if not circular.from_text and circular.created_by and circular.created_by.department %}
+                        <div class="text-muted small">{{ circular.created_by.department.name }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="circular-body border p-3 circular-body-card" style="white-space:pre-wrap;">
+            {{ circular.body|linebreaksbr }}
+        </div>
+        <div class="row mb-3 d-flex justify-content-end">
+            <div class="col-md-4">
+                <div>
+
+                    <div class="card mt-4 text-right">
+                        <div class="card-body p-2 small">
+                           
+                            <div class="mt-1">
+                                {% if circular.created_by %}
+                                    <div class="font-weight-bold">{{ circular.created_by.name }}</div>
+                                    {% if circular.created_by.department %}
+                                        <div class="text-muted">{{ circular.created_by.department.name }}</div>
+                                    {% endif %}
+                                    {% if circular.created_by.email %}
+                                        <div class="text-muted">{{ circular.created_by.email }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="text-muted">--</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </article>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Principal - Departments</h1>
+<p>Manage and view all departments here.</p>
+
+
+<table class="table table-bordered table-striped">
+	<thead>
+		<tr>
+			<th>Code</th>
+			<th>Name (HOD)</th>
+			<th>AHOD</th>
+			<th>Staff Count</th>
+			<th>Staff Members</th>
+			<th>Students</th>
+		</tr>
+	</thead>
+	<tbody>
+				{% for dept in departments %}
+				<tr>
+						<td>{{ dept.code }}</td>
+						<td>
+								{{ dept.name }}
+								<span class="text-muted small">
+										{% if dept.hod %} (HOD: {{ dept.hod.name }}){% endif %}
+								</span>
+						</td>
+						<td>{% if dept.ahod %}{{ dept.ahod.name }}{% else %}-{% endif %}</td>
+						<td>{{ dept.staff_count }}</td>
+						<td>
+									<a href="{% url 'principal_department_staff' dept.id %}" class="btn btn-primary btn-sm">
+										View Staff
+									</a>
+						</td>
+            
+						<td>
+							<a href="{% url 'principal_department_students' dept.id %}" class="btn btn-success btn-sm">
+								View Students
+							</a>
+						</td>
+				</tr>
+		{% empty %}
+		<tr><td colspan="5">No departments found.</td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+<!-- Make sure Bootstrap JS and jQuery are loaded for modal functionality -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

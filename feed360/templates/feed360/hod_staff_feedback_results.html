@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Staff Feedback Results (All Forms)</h2>
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="staff_id">Select Staff:</label>
+                <select name="staff_id" id="staff_id" class="form-control" required>
+                    <option value="">-- Select Staff --</option>
+                    {% for value, label in staff_dropdown %}
+                        <option value="{{ value }}" {% if value|stringformat:'s' == selected_staff_id %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary">View Results</button>
+            </div>
+        </div>
+    </form>
+
+    {% if selected_staff %}
+        <h4>Results for: {% if selected_staff.name %}{{ selected_staff.name }}{% else %}{{ selected_staff }}{% endif %}</h4>
+        
+        {% if results %}
+            <h4>Per-Form, Per-Question Results</h4>
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Form Title</th>
+                        <th>Question</th>
+                        <th>Avg Rating</th>
+                        <th>Sentiment</th>
+                        <th>Comments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup results by form_title as form_groups %}
+                    {% for form in form_groups %}
+                        {% for q in form.list %}
+                        <tr>
+                            {% if forloop.first %}
+                            <td rowspan="{{ form.list|length }}">{{ form.grouper }}</td>
+                            {% endif %}
+                            <td>{{ q.question_text }}</td>
+                            <td>{{ q.avg_rating }}</td>
+                            <td>Sentiment: <b>{{ q.sentiment }}</b> ({{ q.confidence|floatformat:2 }} confidence)</td>
+                            <td>
+                                {% if forloop.first %}
+                                    {% if selected_staff.id %}
+                                        <a class="btn btn-sm btn-success" href="{% url 'feed360_hod_view_comments_all' selected_staff.id q.form_id %}">View All</a>
+                                    {% else %}
+                                        <a class="btn btn-sm btn-success" href="{% url 'feed360_hod_view_comments_all_custom' selected_staff q.form_id %}">View All</a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">No feedback found for this staff.</div>
+        {% endif %}
+
+        {# --- Staff Dashboard Charts (reuse staff_my_results style) --- #}
+        <h4>Staff Feedback Charts</h4>
+        {% if not is_custom_staff %}
+            <canvas id="trendChart" height="80"></canvas>
+            <canvas id="aspectChart" height="80"></canvas>
+        {% endif %}
+        <canvas id="sentimentPie" width="500" height="500" style="width:500px; height:500px;"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {% if not is_custom_staff %}
+            <script id="trend-data" type="application/json">{{ trend_json|default:'[]'|safe }}</script>
+            <script id="aspect-labels" type="application/json">{{ aspect_labels_json|default:'[]'|safe }}</script>
+            <script id="aspect-data" type="application/json">{{ aspect_data_json|default:'{}'|safe }}</script>
+        {% endif %}
+        <script id="sentiment-dist" type="application/json">{{ sentiment_dist_json|default:'{}'|safe }}</script>
+        <script>
+        {% if not is_custom_staff %}
+            // Trend chart
+            const trend = JSON.parse(document.getElementById('trend-data').textContent);
+            const trendLabels = trend.map(x => x.form_id);
+            const trendData = trend.map(x => x.overall_score);
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Overall Score',
+                        data: trendData,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                }
+            });
+            // Aspect chart
+            const aspectLabels = JSON.parse(document.getElementById('aspect-labels').textContent);
+            const aspectData = JSON.parse(document.getElementById('aspect-data').textContent);
+            const aspectDatasets = aspectLabels.map((label, i) => ({
+                label: label,
+                data: aspectData[label],
+                borderColor: `hsl(${i*60},70%,50%)`,
+                fill: false
+            }));
+            new Chart(document.getElementById('aspectChart'), {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: aspectDatasets
+                }
+            });
+        {% endif %}
+        // Sentiment pie
+        const sentimentDist = JSON.parse(document.getElementById('sentiment-dist').textContent);
+        const sentimentLabels = Object.keys(sentimentDist);
+        const sentimentCounts = Object.values(sentimentDist);
+        new Chart(document.getElementById('sentimentPie'), {
+            type: 'pie',
+            data: {
+                labels: sentimentLabels,
+                datasets: [{
+                    data: sentimentCounts,
+                    backgroundColor: ['#4caf50','#2196f3','#ff9800','#f44336','#9c27b0']
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false
+            }
+        });
+        </script>
+    {% endif %}
+</div>
+{% endblock %}

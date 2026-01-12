@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+{% block root %}
+<div class="container mt-4">
+    <h3>My Class Students</h3>
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    {% if students %}
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Roll Number</th>
+                <th>Name</th>
+                <th>Year</th>
+                <th>Section</th>
+                <th>Present %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.roll }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ student.year }}</td>
+                <td>
+                    {% if student.section == 2 %}A{% elif student.section == 3 %}B{% else %}{{ student.section }}{% endif %}
+                </td>
+                <td>
+                    {% if student_percentages and student.id %}
+                        {{ student_percentages|dict_get:student.id|default:0|floatformat:1 }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No students found for your class.</p>
+    {% endif %}
+</div>
+{% endblock %}

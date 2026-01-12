@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>OD's Status for {{ student.name }} ({{ student.roll_no }})</h3>
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Mentor</th>
+            <th>Advisor</th>
+            <th>AHOD</th>
+            <th>HOD</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if od_records %}
+            {% for od in od_records %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ od.sub }}</td>
+                <td>
+                    {% if od.user.mentor %}
+                        {{ od.user.mentor.name }}<br>
+                        <small>{{ od.user.mentor.department.name }}</small><br>
+                    {% endif %}
+                    {% if od.Mstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif od.Mstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif od.Mstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ od.Mstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if od.user.advisor %}
+                        {{ od.user.advisor.name }}<br>
+                        <small>{{ od.user.advisor.department.name }}</small><br>
+                    {% endif %}
+                    {% if od.Astatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif od.Astatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif od.Astatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ od.Astatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if od.user.ahod %}
+                        {{ od.user.ahod.name }}<br>
+                        <small>{{ od.user.ahod.department.name }}</small><br>
+                    {% endif %}
+                    {% if od.AHstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif od.AHstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif od.AHstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ od.AHstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if od.user.hod %}
+                        {{ od.user.hod.name }}<br>
+                        <small>{{ od.user.hod.department.name }}</small><br>
+                    {% endif %}
+                    {% if od.Hstatus == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 2px 8px; border-radius: 6px;">Approved</span>
+                    {% elif od.Hstatus == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 2px 8px; border-radius: 6px;">Pending</span>
+                    {% elif od.Hstatus == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 2px 8px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ od.Hstatus }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if od.status == 'Approved' %}
+                        <span style="color: white; background: #28a745; padding: 4px 12px; border-radius: 6px;">Approved</span>
+                    {% elif od.status == 'Pending' %}
+                        <span style="color: white; background: orange; padding: 4px 12px; border-radius: 6px;">Pending</span>
+                    {% elif od.status == 'Rejected' %}
+                        <span style="color: white; background: #dc3545; padding: 4px 12px; border-radius: 6px;">Rejected</span>
+                    {% else %}
+                        <span>{{ od.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="8">No OD Records Found</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Scan Gatepass QR Code</h2>
+<div id="qr-reader" style="width:300px;"></div>
+<div id="scan-result"></div>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+<script>
+function onScanSuccess(decodedText, decodedResult) {
+    // Assume QR code contains gatepass_id and scan_type
+    // Example QR: {"gatepass_id":123, "scan_type":"exit"}
+    let data;
+    try {
+        data = JSON.parse(decodedText);
+    } catch (e) {
+        document.getElementById('scan-result').innerText = 'Invalid QR code.';
+        return;
+    }
+    fetch("{% url 'process_gatepass_qr_scan' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": '{{ csrf_token }}'
+        },
+        body: `gatepass_id=${data.gatepass_id}&scan_type=${data.scan_type}`
+    })
+    .then(response => response.json())
+    .then(result => {
+        if(result.success) {
+            document.getElementById('scan-result').innerText = result.message;
+        } else {
+            document.getElementById('scan-result').innerText = result.error;
+        }
+    });
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+    "qr-reader", { fps: 10, qrbox: 250 }
+);
+html5QrcodeScanner.render(onScanSuccess);
+</script>
+{% endblock %}

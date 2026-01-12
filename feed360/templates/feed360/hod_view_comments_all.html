@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <h3>Student Comments & Ratings (All Questions)</h3>
+    {% for q in questions %}
+        <h5>Question: {{ q.text }}</h5>
+        <table class="table table-bordered mb-4">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Sentiment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in q.student_feedback %}
+                <tr>
+                    <td>{{ entry.student_name }}</td>
+                    <td>{% if entry.rating is not None %}{{ entry.rating }}{% else %}<span class="text-muted">not submitted yet</span>{% endif %}</td>
+                    <td>{% if entry.comment %}{{ entry.comment }}{% else %}<span class="text-muted">not submitted yet</span>{% endif %}</td>
+                    <td>{% if entry.sentiment %}{{ entry.sentiment }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+    <a href="{{ back_url }}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

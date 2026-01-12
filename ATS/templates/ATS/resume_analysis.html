@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-center mb-4" style="font-size:2rem; color:var(--primary-color);">Resume Analysis Results</h2>
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+<div class="score-dashboard mb-4">
+    <h4 class="mb-2" style="color:var(--primary-color);">Resume Score</h4>
+    <ul class="pl-0" style="list-style:none;">
+        <li><strong>Overall Resume Score:</strong> <span style="color: #007bff; font-size:1.3em;">{{ overall.score }}/100</span></li>
+    </ul>
+</div>
+<div class="improvement-lines mb-4">
+    <h4 class="mb-3" style="color:var(--primary-color);">Lines That Need Improvement</h4>
+    <form method="post" action="" class="mb-3">
+        {% csrf_token %}
+        <button type="submit" name="analyze_more" class="btn btn-outline-primary">Analyze More</button>
+    </form>
+    {% if ai_error %}
+        <div class="alert alert-warning">AI analysis could not be fully completed: {{ ai_error }}. Please try again or check your resume/JD formatting.</div>
+    {% endif %}
+    {% if lines_to_improve %}
+        <div class="table-responsive">
+            <table class="table" style="width:100%; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px #e0e4e8;">
+                <thead style="background:#007bff;">
+                    <tr style="border-bottom:2px solid var(--border-color);">
+                        <th style="padding:14px 18px; color:#fff; font-size:15px; font-weight:600; border:none; background:#007bff;">Section</th>
+                        <th style="padding:14px 18px; color:#fff; font-size:15px; font-weight:600; border:none; background:#007bff;">Original Line</th>
+                        <th style="padding:14px 18px; color:#fff; font-size:15px; font-weight:600; border:none; background:#007bff;">Reason</th>
+                        <th style="padding:14px 18px; color:#fff; font-size:15px; font-weight:600; border:none; background:#007bff;">Suggestion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for line in lines_to_improve %}
+                    <tr style="background-color: #fff; border-radius:8px;">
+                        <td style="font-weight:500; padding:12px 18px; border:none;">{{ line.section }}</td>
+                        <td style="white-space:pre-wrap; padding:12px 18px; border:none;">{{ line.original }}</td>
+                        <td style="color:#dc3545; white-space:pre-wrap; padding:12px 18px; border:none;">{{ line.reason }}</td>
+                        <td style="color:#007bff; white-space:pre-wrap; font-weight:500; padding:12px 18px; border:none;">{{ line.suggestion }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% elif not ai_error %}
+        <p class="text-success font-weight-bold">No major improvements needed. Great job!</p>
+    {% endif %}
+</div>
+<div class="resume-preview mt-4">
+    <h4 class="mb-3" style="color:var(--primary-color);">Full Resume Preview</h4>
+    <pre style="background:#f8f9fa; border:1px solid #eee; border-radius:6px; padding:1em;">{{ resume_text }}</pre>
+</div>
+<div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+    <button class="btn btn-secondary" disabled>Download Improved Resume (coming soon)</button>
+    <a href="{% url 'ATS:upload_resume' %}" class="btn btn-link">Upload Another Resume</a>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_get %}
+
+{% block content %}
+<style>
+    .gp-header-bar {
+    padding: 12px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.home-icon i {
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.home-icon:hover i {
+    transform: scale(1.2);
+}
+</style>
+<div class="gp-header-bar">
+    <h5 class="header-title mb-0">Feedback</h5>
+    <a href="{% url 'dash' %}" class="home-icon">
+        <i class="fa fa-home"></i>
+    </a>
+</div>
+<div class="container mt-4" style="max-width: 800px;">
+    <h2 class="page-title">Fill Feedback Form: {{ form.title }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Staff:</strong> {{ staff_display_name }}
+            </div>
+            <div class="card-body">
+                {% for question in questions %}
+                <div class="mb-4">
+                    <label class="form-label">{{ question.text }}</label>
+                    
+                    {% if question.answer_type == 'stars' or question.answer_type == 'both' %}
+                    <div class="star-rating" data-input-name="star_{{ question.id }}_staff">
+                        {% for i in "1234" %}
+                        <span class="fa fa-star-o" data-value="{{ forloop.counter }}"></span>
+                        {% endfor %}
+                        <input type="hidden" name="star_{{ question.id }}_staff" required>
+                    </div>
+                    {% endif %}
+                    
+                    {% if question.answer_type == 'text' or question.answer_type == 'both' %}
+                    <textarea name="comment_{{ question.id }}_staff" class="form-control mt-2" rows="3" placeholder="Enter your comments here"></textarea>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="form-group text-center">
+            <button type="submit" class="btn btn-submit">Submit Feedback</button>
+        </div>
+    </form>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+/* Page Title */
+.page-title {
+    background: #1976d2;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 6px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+    margin-bottom: 20px;
+}
+
+/* Card */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(25,118,210,0.1);
+    border: none;
+}
+
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+}
+
+/* Form controls */
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+/* Submit Button */
+.btn-submit {
+    background: #4caf50;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 8px 20px;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background: #388e3c;
+}
+
+/* Star rating */
+.star-rating {
+    display: inline-block;
+}
+
+.star-rating .fa {
+    font-size: 1.8em;
+    color: #ddd;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: color 0.2s;
+}
+
+.star-rating .fa.selected,
+.star-rating .fa:hover,
+.star-rating .fa.selected ~ .fa {
+    color: #ffc107;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .star-rating .fa {
+        font-size: 1.5em;
+    }
+    .form-control {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 10px 0;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.star-rating').forEach(function(ratingDiv) {
+        var stars = ratingDiv.querySelectorAll('.fa');
+        var input = ratingDiv.querySelector('input[type="hidden"]');
+        stars.forEach(function(star, idx) {
+            star.addEventListener('click', function() {
+                var val = star.getAttribute('data-value');
+                input.value = val;
+                stars.forEach(function(s, i) {
+                    if (i < val) {
+                        s.classList.add('selected');
+                        s.classList.remove('fa-star-o');
+                        s.classList.add('fa-star');
+                    } else {
+                        s.classList.remove('selected');
+                        s.classList.remove('fa-star');
+                        s.classList.add('fa-star-o');
+                    }
+                });
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+
+{% block mobile_header %}{% endblock %}
+
+{% block root %}
+<style>
+    /* Timetable adapted to OD/leaves responsive card style */
+    .od-table { width:100%; margin-top:12px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow-x:auto; padding:0; }
+    .od-table-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1976d2; color:#fff; font-weight:600; border-top-left-radius:8px; border-top-right-radius:8px; }
+    .od-divider { margin:0; border:0; height:2px; background:linear-gradient(to right,#e0e7ff,#e0e0e0); }
+    .od-table table { width:100%; border-collapse:collapse; table-layout: fixed; margin:0; }
+    .od-table thead th { background:#f5f7fa; color:#2c3e50; font-weight:600; padding:10px; text-align:center; position:sticky; top:0; z-index:3; border-bottom:1px solid #e6eef6; }
+    .od-table tbody tr { transition:background 0.12s ease; }
+    .od-table tbody tr:nth-child(even) { background:#fbfdff; }
+    .od-table tbody tr:hover { background:#f1f5f9; }
+    .od-table td, .od-table th { padding:10px; border:1px solid #e8f0f6; vertical-align:middle; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; text-align:center; }
+    /* Keep day column visually strong but centered like a regular table cell */
+    .od-table .day-cell { font-weight:700; color:#0f172a; text-align:center; }
+
+    /* Remove unexpected blue outlines/borders (focus rings, bootstrap table borders) */
+    .od-table table { border: none; }
+    .od-table thead tr { border: none; }
+    .od-table thead th { border-color: #e6eef6; box-shadow: none; outline: none; }
+    .od-table th, .od-table td { border: 1px solid #e8f0f6 !important; }
+    .od-table .od-table-header { box-shadow: none; border: none; }
+    .od-table select:focus, .od-table button:focus, .od-table a:focus { outline: none !important; box-shadow: none !important; }
+
+    @media (max-width:768px) {
+        .od-table { padding:8px; }
+        /* Stack the table into card-like rows */
+        .od-table table { display:block; width:100%; }
+        .od-table thead { display:none; }
+        .od-table tbody { display:block; width:100%; padding:0; margin:0; }
+        /* Make rows more compact on small screens */
+        .od-table tbody tr { display:block; width:100%; border:1px solid #e6eef6; margin:0 0 6px 0; border-radius:6px; padding:6px; background:#fff; box-sizing:border-box; }
+    .od-table td { display:block; padding:6px 0; border:none; border-bottom:1px solid #f1f5f9; white-space:normal; box-sizing:border-box; font-size:0.92rem; }
+    .od-table td::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:4px; font-size:0.85rem; }
+    .od-table td:last-child { border-bottom:none; }
+    /* Period cells: keep label and select on one row */
+    .od-table td.period-cell { display:flex; flex-direction:row; align-items:center; gap:8px; padding:6px 0; }
+    .od-table td.period-cell::before { display:inline-block; margin:0; min-width:48px; font-size:0.85rem; }
+    .od-table td.period-cell select.form-control { flex:1; margin:0; }
+        /* Make inputs full-width and compact */
+        .od-table select.form-control, .od-table .form-control { width:100%; margin:0; padding:6px 8px; height:auto; font-size:0.92rem; }
+        .od-table .day-cell { padding-top:2px; padding-bottom:4px; font-size:0.95rem; }
+    }
+    /* Ensure no extra spacing after last row */
+    .od-table tbody { margin:0; padding:0; }
+    .od-table tbody tr:last-child { margin-bottom:0; }
+    .od-table table { border-spacing:0; }
+</style>
+
+<!-- Update Class Timetable -->
+<form method="post" id="timetable-form">
+    {% csrf_token %}
+    <button type="button" id="edit-btn" class="btn btn-secondary mb-2" onclick="toggleEdit()">Edit</button>
+    <button type="submit" id="save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
+    <div class="od-table">
+        <div class="od-table-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="header-title">Update Class Timetable</span>
+            <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="color:white;">
+                <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+            </a>
+        </div>
+        <hr class="od-divider">
+        <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Day / Period</th>
+                {% for p in periods %}
+                    <th>{{ p }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days %}
+            <tr>
+                <td data-label="DAY" class="day-cell"><b>{{ day }}</b></td>
+                {% for p in periods %}
+                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                        <td data-label="{{ p }}" class="period-cell">
+                            <select name="subject_{{ key }}" class="form-control timetable-input" onchange="handleSubjectChange(this, '{{ key }}')">
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in all_subjects %}
+                                    <option value="{{ subject.id }}" {% if table|dict_get:key == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="department_{{ key }}" class="form-control timetable-input" style="display:none;" onchange="updateSubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <script>
+                        function handleSubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateSubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+                            subjectSelect.value = '';
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach((subject, idx) => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                        // Auto-select the first subject if available
+                                        if (data.subjects.length > 0) {
+                                            subjectSelect.value = data.subjects[0].id;
+                                        }
+                                    });
+                            }
+                        }
+                        </script>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</form>
+<script>
+// Disable timetable inputs by default
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.timetable-input').forEach(i => i.disabled = true);
+});
+function toggleEdit() {
+    const selects = document.querySelectorAll('.timetable-input');
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    if (editBtn.innerText === 'Edit') {
+        selects.forEach(i => i.disabled = false);
+        editBtn.innerText = 'Cancel';
+        saveBtn.style.display = '';
+    } else {
+        selects.forEach(i => i.disabled = true);
+        editBtn.innerText = 'Edit';
+        saveBtn.style.display = 'none';
+    }
+}
+</script>
+
+<form method="post" id="my-timetable-form">
+    {% csrf_token %}
+    <button type="button" id="my-edit-btn" class="btn btn-secondary mb-2" onclick="toggleMyEdit()">Edit</button>
+    <button type="submit" id="my-save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
+    <div class="od-table">
+        <div class="od-table-header"><span class="header-title">My Timetable</span></div>
+        <hr class="od-divider">
+        <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Day / Period</th>
+                {% for p in periods %}
+                    <th>{{ p }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days %}
+            <tr>
+                <td data-label="DAY" class="day-cell"><b>{{ day }}</b></td>
+                {% for p in periods %}
+                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                        <td data-label="{{ p }}" class="period-cell">
+                            <select name="my_subject_{{ key }}" class="form-control my-timetable-input" onchange="handleMySubjectChange(this, '{{ key }}')">
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in all_subjects %}
+                                    <option value="{{ subject.id }}" {% if my_table|dict_get:key == subject.id|stringformat:'s' %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="my_department_{{ key }}" class="form-control my-timetable-input" style="display:none;" onchange="updateMySubjects(this, '{{ key }}')">
+                                <option value="">-- Select Department --</option>
+                                {% for department in all_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <script>
+                        function handleMySubjectChange(subjectSelect, key) {
+                            const departmentSelect = document.querySelector(`[name='my_department_${key}']`);
+                            if (subjectSelect.value === 'others') {
+                                departmentSelect.style.display = '';
+                                departmentSelect.disabled = false;
+                            } else {
+                                departmentSelect.style.display = 'none';
+                                departmentSelect.disabled = true;
+                            }
+                        }
+
+                        function updateMySubjects(departmentSelect, key) {
+                            const subjectSelect = document.querySelector(`[name='my_subject_${key}']`);
+                            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>'; // Clear previous options
+
+                            if (departmentSelect.value) {
+                                fetch(`/get-department-subjects/${departmentSelect.value}/`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        data.subjects.forEach(subject => {
+                                            const option = document.createElement('option');
+                                            option.value = subject.id;
+                                            option.textContent = subject.name;
+                                            subjectSelect.appendChild(option);
+                                        });
+                                    });
+                            }
+                        }
+                        </script>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</form>
+<script>
+// Disable my timetable inputs by default
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.my-timetable-input').forEach(i => i.disabled = true);
+});
+function toggleMyEdit() {
+    const selects = document.querySelectorAll('.my-timetable-input');
+    const editBtn = document.getElementById('my-edit-btn');
+    const saveBtn = document.getElementById('my-save-btn');
+    if (editBtn.innerText === 'Edit') {
+        selects.forEach(i => i.disabled = false);
+        editBtn.innerText = 'Cancel';
+        saveBtn.style.display = '';
+    } else {
+        selects.forEach(i => i.disabled = true);
+        editBtn.innerText = 'Edit';
+        saveBtn.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

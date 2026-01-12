@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4">
+    <div class="card">
+        <!-- Card header with title and home icon -->
+        <div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+    <span class="header-title">Notification History</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a></div>
+
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-3 flex-wrap">
+                <form method="post" class="mr-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Mark all as read</button>
+                </form>
+                <form method="post" action="{% url 'delete_all_student_notifications' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_all" value="1">
+                    <button type="submit" class="btn btn-danger">Delete All</button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" style="border-radius:8px; overflow:hidden;">
+                    <thead style="background:#1976d2; color:#fff; font-weight:700; text-align:center;">
+                        <tr>
+                            <th style="border:none;">Date</th>
+                            <th style="border:none;">Time</th>
+                            <th style="border:none;">Message</th>
+                            <th style="border:none;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for n in all_notifications %}
+                        <tr class="notification-row" style="background:#fff; transition:0.3s; border-bottom:1px solid #ddd;">
+                            <td data-label="Date" style="vertical-align:middle; text-align:center; font-weight:500;">{{ n.created_at|date:'Y-m-d' }}</td>
+                            <td data-label="Time" style="vertical-align:middle; text-align:center; font-weight:500;">{{ n.created_at|date:'H:i:s' }}</td>
+                            <td data-label="Message" style="vertical-align:middle; padding:8px 12px;">
+                                {% if n.circular and n.circular.id %}
+                                    <a href="{% url 'circular_detail' n.circular.id %}">{{ n.message }}</a>
+                                {% else %}
+                                    {{ n.message }}
+                                {% endif %}
+                            </td>
+                            <td data-label="Status" style="vertical-align:middle; text-align:center;">
+                                {% if n.is_read %}
+                                    <span class="badge badge-success">Read</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Unread</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3">No notifications found.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Card header */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left; /* ensures left alignment */
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+/* Table inside card styling */
+.table th, .table td {
+    padding: 12px 10px;
+    border-top: none;
+}
+
+.table tbody tr {
+    border-radius: 6px;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+}
+
+.badge-success {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.badge-warning {
+    background-color: #ff9800;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: #1976d2;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 16px;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 16px;
+    transition: background 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #d32f2f;
+}
+
+/* Responsive table */
+@media (max-width: 767px) {
+    .card-header {
+        flex-direction: row; /* keep horizontal layout */
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-header .header-title {
+        text-align: left;
+        font-size: 1.1rem;
+        flex: 1;
+    }
+    .card-header .home-icon {
+        flex: 0;
+    }
+    .table thead {
+        display: none;
+    }
+    .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+    }
+    .table tr {
+        margin-bottom: 12px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        padding: 12px;
+        border: 1px solid #eee;
+    }
+    .table td {
+        padding: 6px 8px;
+        text-align: left;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #333;
+        margin-right: 8px;
+        flex: 0 0 auto;
+    }
+    .table td[data-label="Message"] {
+        display: block;
+        text-align: left;
+        margin-top: 8px;
+    }
+    .table td[data-label="Message"]::before {
+        display: block;
+        margin-bottom: 6px;
+    }
+    .table td .badge {
+        margin-left: 8px;
+    }
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .d-flex.justify-content-between form {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+</style>
+{% endblock %}

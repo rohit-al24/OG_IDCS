@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% block content %}
+<a href="{% url 'student_details' %}" class="btn btn-secondary mb-3">Back to View All</a>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Left: Profile Image and Basic Info -->
+    <div class="col-md-3 d-flex flex-column align-items-center">
+      {% if student.profile %}
+        <img src="{{ student.profile.url }}" class="img-thumbnail mb-3" style="width: 160px; height: 160px; object-fit: cover;" alt="Profile Image">
+      {% else %}
+        <img src="/static/images/default-profile.png" class="img-thumbnail mb-3" style="width: 160px; height: 160px; object-fit: cover;" alt="No Image">
+      {% endif %}
+      <h4 class="mt-2 mb-0" style="font-weight: bold;">{{ student.name|default_if_none:"" }}</h4>
+      <div class="text-muted">Student</div>
+      <div class="mt-2">Roll No: <span style="font-weight: 500;">{{ student.roll_no|default_if_none:"" }}</span></div>
+    </div>
+    <!-- Right: Details Grid -->
+    <div class="col-md-9">
+      <div class="d-flex justify-content-end align-items-center mb-3">
+        {% if is_advisor %}
+          <button type="button" id="editBtn" class="btn btn-warning me-2">Edit</button>
+        {% endif %}
+        <button type="submit" form="editForm" id="saveBtn" class="btn btn-success" disabled>Save Changes</button>
+      </div>
+      <form method="post" id="editForm">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Email</div>
+              <div>{{ student.email|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Department</div>
+              <div>{{ student.department|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <!-- OD and Leave removed as per request -->
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Mentor</div>
+              <div>{{ student.mentor_name|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Advisor</div>
+              <div>
+                {% if student.advisor_name %}
+                  {{ student.advisor_name }}
+                {% elif student.advisor %}
+                  {{ student.advisor.get_full_name|default:student.advisor|default_if_none:"" }}
+                {% else %}
+                  <span class="text-muted">Not Assigned</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">AHOD</div>
+              <div>{{ student.ahod|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">HOD</div>
+              <div>{{ student.hod|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <!-- OD, Leave, Gatepass, Bonafide grids -->
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">OD</div>
+              <div>
+                <a href="{% url 'advisor_student_od_status' student.id %}" title="View OD Status">
+                  {{ student.od_details|default_if_none:""|length }} OD(s)
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Leave</div>
+              <div>
+                <a href="{% url 'advisor_student_leave_status' student.id %}" title="View Leave Status">
+                  {{ student.leave_details|default_if_none:""|length }} Leave(s)
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Gatepass</div>
+              <div>
+                {% if is_advisor %}
+                  {% url 'advisor_student_gatepass_status' student.id as gatepass_url %}
+                  <a href="{{ gatepass_url }}" title="View Gatepass Status">
+                    {{ student.gatepass_details|default_if_none:""|length }} Gatepass(es)
+                  </a>
+                {% else %}
+                  {{ student.gatepass_details|default_if_none:""|length }} Gatepass(es)
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Bonafide</div>
+              <div>
+                {% if is_advisor %}
+                  {% url 'advisor_student_bonafide_status' student.id as bonafide_url %}
+                  <a href="{{ bonafide_url }}" title="View Bonafide Status">
+                    {{ student.bonafide_details|default_if_none:""|length }} Bonafide(s)
+                  </a>
+                {% else %}
+                  {{ student.bonafide_details|default_if_none:""|length }} Bonafide(s)
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Batch</div>
+              <div>{{ student.batch|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Academic Year</div>
+              <div>{{ student.academic_year|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">CGPA</div>
+              <div>{{ student.cgpa|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <!-- Personal details continue in the same row grid -->
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Fathers Name</div>
+              {% if is_advisor %}
+                <input type="text" name="father_name" class="form-control" id="fatherField" value="{{ student.father_name|default_if_none:'' }}" disabled>
+              {% else %}
+                <div>{{ student.father_name|default_if_none:"" }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Mother's Name</div>
+              {% if is_advisor %}
+                <input type="text" name="mother_name" class="form-control" id="motherField" value="{{ student.mother_name|default_if_none:'' }}" disabled>
+              {% else %}
+                <div>{{ student.mother_name|default_if_none:"" }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Community</div>
+              {% if is_advisor %}
+                <select name="community" class="form-control" id="communityField" disabled>
+                  <option value="" {% if not student.community %}selected{% endif %}></option>
+                  <option value="SC" {% if student.community == 'SC' %}selected{% endif %}>SC</option>
+                  <option value="ST" {% if student.community == 'ST' %}selected{% endif %}>ST</option>
+                  <option value="OBC" {% if student.community == 'OBC' %}selected{% endif %}>OBC</option>
+                  <option value="BC" {% if student.community == 'BC' %}selected{% endif %}>BC</option>
+                  <option value="MBC" {% if student.community == 'MBC' %}selected{% endif %}>MBC</option>
+                  <option value="DNC" {% if student.community == 'DNC' %}selected{% endif %}>DNC</option>
+                  <option value="EWS" {% if student.community == 'EWS' %}selected{% endif %}>EWS</option>
+                </select>
+              {% else %}
+                <div>{{ student.community|default_if_none:"" }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Religion</div>
+              {% if is_advisor %}
+                <select name="religion" class="form-control" id="religionField" disabled>
+                  <option value="" {% if not student.religion %}selected{% endif %}></option>
+                  <option value="Hindu" {% if student.religion == 'Hindu' %}selected{% endif %}>Hindu</option>
+                  <option value="Muslim" {% if student.religion == 'Muslim' %}selected{% endif %}>Muslim</option>
+                  <option value="Christian" {% if student.religion == 'Christian' %}selected{% endif %}>Christian</option>
+                </select>
+              {% else %}
+                <div>{{ student.religion|default_if_none:"" }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Nationality</div>
+              {% if is_advisor %}
+                <select name="nationality" id="nationality_select" class="form-control" onchange="if(this.value=='Other'){document.getElementById('other_nationality').style.display='block';}else{document.getElementById('other_nationality').style.display='none';}" disabled>
+                  <option value="Indian" {% if student.nationality == 'Indian' or not student.nationality %}selected{% endif %}>Indian</option>
+                  <option value="Other" {% if student.nationality != 'Indian' and student.nationality %}selected{% endif %}>Other</option>
+                </select>
+                <input type="text" name="other_nationality" id="other_nationality" class="form-control mt-2" placeholder="Enter Nationality" value="{% if student.nationality != 'Indian' and student.nationality %}{{ student.nationality|default_if_none:'' }}{% endif %}" style="display: {% if student.nationality != 'Indian' and student.nationality %}block{% else %}none{% endif %};" disabled>
+              {% else %}
+                <div>{{ student.nationality|default_if_none:'Indian' }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Address</div>
+              <div>{{ student.address|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Parent Mobile</div>
+              <div>{{ student.parent_mobile|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card p-3">
+              <div class="fw-bold">Mobile</div>
+              <div>{{ student.mobile|default_if_none:"" }}</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <!-- Admission No grid completely removed as per request -->
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function enableEdit() {
+  var gender = document.getElementById('genderField');
+  var father = document.getElementById('fatherField');
+  var mother = document.getElementById('motherField');
+  var community = document.getElementById('communityField');
+  var religion = document.getElementById('religionField');
+  var nationality = document.getElementById('nationality_select');
+  var otherNationality = document.getElementById('other_nationality');
+  if (gender) gender.disabled = false;
+  if (father) father.disabled = false;
+  if (mother) mother.disabled = false;
+  if (community) community.disabled = false;
+  if (religion) religion.disabled = false;
+  if (nationality) nationality.disabled = false;
+  if (otherNationality) otherNationality.disabled = false;
+  var editBtn = document.getElementById('editBtn');
+  if (editBtn) editBtn.style.display = 'none';
+  // Save button is always visible, just keep it disabled until change
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('editForm');
+  var saveBtn = document.getElementById('saveBtn');
+  let initialValues = {};
+  function storeInitialValues() {
+    initialValues = {
+      gender: document.getElementById('genderField')?.value,
+      father: document.getElementById('fatherField')?.value,
+      mother: document.getElementById('motherField')?.value,
+      community: document.getElementById('communityField')?.value,
+      religion: document.getElementById('religionField')?.value,
+      nationality: document.getElementById('nationality_select')?.value,
+      other_nationality: document.getElementById('other_nationality')?.value
+    };
+  }
+
+  // Wire the Edit button
+  var editBtn = document.getElementById('editBtn');
+  if (editBtn) {
+    editBtn.addEventListener('click', function() {
+      enableEdit();          // enable fields and hide Edit
+      storeInitialValues();  // snapshot after enabling
+      checkChanged();        // recompute Save state
+    });
+    storeInitialValues();    // initial snapshot for first comparison
+  }
+
+  function checkChanged() {
+    let changed = false;
+    if (document.getElementById('genderField')?.value !== initialValues.gender) changed = true;
+    if (document.getElementById('fatherField')?.value !== initialValues.father) changed = true;
+    if (document.getElementById('motherField')?.value !== initialValues.mother) changed = true;
+    if (document.getElementById('communityField')?.value !== initialValues.community) changed = true;
+    if (document.getElementById('religionField')?.value !== initialValues.religion) changed = true;
+    if (document.getElementById('nationality_select')?.value !== initialValues.nationality) changed = true;
+    if (document.getElementById('nationality_select')?.value === 'Other' &&
+        document.getElementById('other_nationality')?.value !== initialValues.other_nationality) changed = true;
+    if (saveBtn) saveBtn.disabled = !changed;
+  }
+
+  // existing listeners (keep these)
+  if (form) {
+    form.addEventListener('input', checkChanged);
+    form.addEventListener('change', checkChanged);
+    form.addEventListener('submit', function(e) {
+      var sel = document.getElementById('nationality_select');
+      var other = document.getElementById('other_nationality');
+      if (sel && sel.value === 'Other' && other) {
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'nationality';
+        hidden.value = other.value;
+        this.appendChild(hidden);
+      }
+    });
+  }
+
+  if (saveBtn) saveBtn.disabled = true;
+});
+</script>
+{% endblock %}

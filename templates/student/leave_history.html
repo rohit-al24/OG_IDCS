@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block root %}
+<style>
+    /* Reused OD table styles for exact parity */
+    .od-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* OD Table Header Section (Title + Icon) */
+    .od-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.25rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .od-table-header .header-title { margin: 0; }
+    .od-table-header .home-icon i { font-size: 1.5rem; color: #fff; cursor: pointer; transition: transform 0.2s ease; }
+    .od-table-header .home-icon:hover i { transform: scale(1.2); }
+
+    hr.od-divider { margin: 0; border: 0; border-top: 2px solid #e0e0e0; }
+
+    /* Table rows */
+    .od-header,
+    .od-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 100px 100px 100px 100px 220px;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .od-header { background: #f1f1f1; color: #333; font-weight: 600; text-align: center; }
+    .od-row:nth-child(even) { background: #f9f9f9; }
+    .od-id { font-weight: 700; color: #1976d2; }
+
+    /* Badges */
+    .badge { padding: 5px 10px; border-radius: 12px; font-weight: 600; color: #fff; font-size: 0.8rem; text-align: center; }
+    .badge-Approved { background: #4caf50; }
+    .badge-Pending { background: #ff9800; }
+    .badge-Rejected { background: #f44336; }
+    .badge-secondary { background: #9e9e9e; }
+
+    .od-actions { display: flex; flex-direction: column; gap: 6px; }
+    .od-actions input[type="file"] { display: none; }
+    .file-upload-label,
+    .btn-upload,
+    .btn-outline-primary {
+        padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem;
+    }
+    .file-upload-label { background: #1976d2; color: #fff; }
+    .file-upload-label:hover { background: #1565c0; }
+    .btn-upload { background: #4caf50; border: none; color: #fff; }
+    .btn-upload:hover { background: #388e3c; }
+
+    /* Responsive stacking */
+    @media (max-width: 768px) {
+        .od-table { padding: 10px; }
+
+        .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
+        .od-header div { display: none; }
+        .od-row { border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff; }
+        .od-row > div { display: flex; justify-content: space-between; padding: 4px 0; }
+        .od-row > div::before { content: attr(data-label); font-weight: 600; color: #555; }
+    }
+</style>
+
+<div class="od-table">
+    <div class="od-table-header">
+        <span class="header-title">Leave Status</span>
+        <a href="{% url 'dash' %}" class="home-icon"><i class="fa fa-home" style="color:#fff"></i></a>
+    </div>
+    <hr class="od-divider">
+
+    {% if leaves %}
+    <div class="od-header">
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>AHOD</div>
+        <div>HOD</div>
+        <div>Actions</div>
+    </div>
+
+    {% for i in leaves %}
+    <div class="od-row">
+        <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
+        <div class="od-title" data-label="Subject">{{ i.sub }}</div>
+
+        <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+        <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+        <div data-label="AHOD">
+            {% if i.user.ahod %}
+            <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+            {% else %}
+            <span class="badge badge-secondary">N/A</span>
+            {% endif %}
+        </div>
+        <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+
+        <div class="od-actions" data-label="Actions">
+            {% if i.Mstatus == "Approved" and i.Astatus == "Approved" and i.Hstatus == "Approved" %}
+                {% if i.proof %}
+                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#proofModal{{ i.id }}">View Proof</button>
+                <!-- Proof Modal -->
+                <div class="modal fade" id="proofModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="proofModalLabel{{ i.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Leave Proof</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body d-flex justify-content-center align-items-center" style="max-height:80vh; overflow-y:auto; padding:0;">
+                                <div style="width:100%; display:flex; justify-content:center; align-items:center; padding:1rem;">
+                                    {% if ".pdf" in i.proof.url|lower %}
+                                    <iframe src="{{ i.proof.url }}" style="width:100%; height:75vh; border:none;"></iframe>
+                                    {% else %}
+                                    <img src="{{ i.proof.url }}" alt="Proof" style="max-width:100%; max-height:75vh; object-fit:contain;" />
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <form action="{% url 'proof_leave' i.id %}" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}
+                    <label class="file-upload-label" for="fileInput{{ i.id }}">Choose File</label>
+                    <input type="file" id="fileInput{{ i.id }}" name="comp" required>
+                    <button type="submit" class="btn-upload">{% if i.proof %}Update Proof{% else %}Upload Proof{% endif %}</button>
+                </form>
+            {% else %}
+            <span style="color:#777;font-size:0.85rem;">Pending approvals</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No Leave records found</div></div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{# Per-row detail modals for leaves (mirror OD detail modal) #}
+{% with all_leaves=leaves %}
+    {% for l in all_leaves %}
+        <div class="modal fade" id="detail{{l.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{l.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailLabel{{l.id}}">Leave Details for {{l.user.name}}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="submitted-time">
+                            <div class="od-detail-item" style="border: none; padding: 0;">
+                                <span class="od-detail-label"><i class="fa fa-clock-o"></i> Submitted At:</span>
+                                <span class="od-detail-value">{{l.created|date:"d M Y, h:i A"}}</span>
+                            </div>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Subject:</span>
+                            <span class="od-detail-value">{{l.sub}}</span>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Reason:</span>
+                            <span class="od-detail-value">{{l.body}}</span>
+                        </div>
+                        {% if l.proof %}
+                        <div class="od-detail-item" style="border: none;">
+                            <span class="od-detail-label">Proof:</span>
+                            <span class="od-detail-value">
+                                <a href="{{l.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endwith %}

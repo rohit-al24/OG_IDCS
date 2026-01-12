@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Feedback Forms Created for {{ department_name }}</h2>
+    {% if forms %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th>Section</th>
+                    <th>Created At</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in forms %}
+                <tr>
+                    <td>{{ form.title }}</td>
+                    <td>{{ form.year }}</td>
+                    <td>{{ form.section }}</td>
+                    <td>{{ form.created_at }}</td>
+                    <td>
+                        {% if form.active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Removed 'View Results' button as requested #}
+                        {% if form.active %}
+                            <form method="post" action="{% url 'feed360_hod_deactivate_form' form.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to deactivate this form?');">Deactivate</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No feedback forms found for your department.</div>
+    {% endif %}
+</div>
+{% endblock %}

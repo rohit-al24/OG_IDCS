@@ -1,0 +1,157 @@
+<!-- Old feedback form removed as requested -->
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block root %}
+
+<style>
+    .checked {
+        color: orange;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-lg-4 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-widget-five">
+                    <div class="stat-icon dib flat-color-1">
+                        <i class="ti ti-comments"></i>
+                    </div>
+                    <form method="post" action="{% url 'hod_feedback_toggle' hod.id %}">{% csrf_token %}
+                        <div class="stat-content">
+                            <div class="text-left dib">
+                                <div class="stat-text">
+                                    {% if hod.get_feedback %}Feedback is Live{% else %}Take Feedback
+                                        {%endif %}
+                                    <div class="stat-heading">
+                                        {% if hod.get_feedback %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Stop Feedback
+                                            Feedback &nbsp;<i class="fa fa-arrow-right"></i></button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm flat-color-1 ">
+                                            Start Feedback &nbsp;<i class="fa fa-arrow-right"></i></button>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form action="{% url 'hod_spot_feedback' %}" method="post">
+<h4>Instance Feedback</h4><br>
+    {% csrf_token %}
+<div class="row">
+    
+    <div class="col-md-3">
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-addon">Staff</div>
+                <select name="staff" id="" class="form-control">
+                    {% for i in hod.staffs.all %}
+                        <option value="{{i.id}}">{{i.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-addon">YEAR</div>
+                <select name="yr" id="" class="form-control">
+                    {% for i in year %}
+                        <option value="{{i.0}}">{{i.1}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-addon">CLASS</div>
+                <select name="cls" id="" class="form-control">
+                    {% for i in class %}
+                        <option value="{{i.0}}">{{i.1}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            <div class="input-group">
+                <button type="submit" class="btn btn-outline-success" >Get Feedback</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+</form>
+
+{% if spf %}
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <strong class="card-title">Spot Ratings</strong>
+        </div>
+        <div class="card-body">
+            <div class="table-stats order-table ov-h">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="serial">QR</th>
+                            <th class="serial">Name</th>
+                            <th>Class</th>
+                            <th>Year</th>
+                            <th>Status</th>
+                            <th>Stars</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in spf %}
+                        <tr>
+                            <td><a href="{{i.qr_code.url}}"><i class=" fa fa-qrcode flat-color-1 "></i></a></td>
+                            <td><small>Mr/Mr/Mrs.</small> {{i.staff.name}}</td>
+                            <td>{{i.get_cls.0.1}}</td>
+                            <td>{{i.get_cls.1.1}}</td>
+                            <td>
+                                {% if i.is_open %}
+                                <span class="badge badge-Approved">Completed</span>
+
+                                {% else %}
+                                <form action="{% url 'hod_spot_feedback_toggle' i.id %}" method="post">{% csrf_token %}
+                                    <button class="btn-outline-danger btn btn-sm">Stop</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for j in "x"|ljust:4 %}
+                                {% if forloop.counter0 < i.avg %} <span class="fa fa-star checked"></span>
+                                    {% else %}
+                                    <span class="fa fa-star"></span>
+                                    {% endif %}
+                                    {% endfor %}
+                                    ({{i.avg}})
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

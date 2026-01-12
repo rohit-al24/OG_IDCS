@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+/* Blue & orange theme, inspired by Resume Builder */
+.pathpilot-form-label { color: #27a3e2; font-weight: 600; }
+.pathpilot-btn {
+	background: linear-gradient(90deg, #27a3e2 60%, #ff9800 100%);
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	padding: 10px 32px;
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin-top: 16px;
+	margin-bottom: 8px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.pathpilot-btn:disabled { opacity: 0.7; }
+.pathpilot-spinner {
+	display: none;
+	margin-left: 10px;
+	vertical-align: middle;
+}
+.pathpilot-timeline {
+	margin-top: 32px;
+	border-left: 4px solid #27a3e2;
+	padding-left: 24px;
+}
+.pathpilot-timeline .timeline-item {
+	margin-bottom: 32px;
+	position: relative;
+}
+.pathpilot-timeline .timeline-dot {
+	position: absolute;
+	left: -32px;
+	top: 0;
+	width: 20px;
+	height: 20px;
+	background: #ff9800;
+	border-radius: 50%;
+	border: 3px solid #fff;
+	box-shadow: 0 0 0 4px #27a3e2;
+}
+.pathpilot-timeline .timeline-content {
+	background: #f7fbff;
+	border-radius: 8px;
+	padding: 18px 24px;
+	box-shadow: 0 2px 8px rgba(39,163,226,0.08);
+}
+.pathpilot-timeline .timeline-title {
+	color: #27a3e2;
+	font-weight: 700;
+	font-size: 1.2rem;
+}
+.pathpilot-timeline .timeline-topic {
+	color: #ff9800;
+	font-weight: 600;
+	font-size: 1.1rem;
+}
+</style>
+
+<div class="container" style="max-width:700px;margin:0 auto;">
+	<h2 id="pathpilot-title" style="color:#27a3e2;font-weight:700;margin-top:32px;">Path Pilot: Course & Career Map Generator</h2>
+	<form id="pathpilot-form" autocomplete="off">
+		<input type="hidden" id="role" name="role" value="Student">
+		<div id="student-fields">
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Student Branch</label>
+				<select class="form-select" id="branch_student" name="branch_student" required>
+					<option value="">Select Branch</option>
+					<option value="Artificial intelligence and data science">Artificial intelligence and data science</option>
+					<option value="Atificial Intelligence and machine learning">Atificial Intelligence and machine learning</option>
+					<option value="Computer science Engineering">Computer science Engineering</option>
+					<option value="Electronic communication Engineering">Electronic communication Engineering</option>
+					<option value="Information Technology">Information Technology</option>
+					<option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+					<option value="Mechanical Engineering">Mechanical Engineering</option>
+					<option value="Civil Engineering">Civil Engineering</option>
+				</select>
+			</div>
+				<div class="mb-3">
+					<label class="form-label pathpilot-form-label">Year</label>
+					<select class="form-select" id="year" name="year" required>
+						<option value="">Select Year</option>
+						<option value="1">1st Year</option>
+						<option value="2">2nd Year</option>
+						<option value="3">3rd Year</option>
+						<option value="4">4th Year</option>
+					</select>
+				</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Degree</label>
+				<select class="form-select" id="degree" name="degree" required>
+					<option value="">Select Degree</option>
+					<option value="BE">BE</option>
+					<option value="B.Tech">B.Tech</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Semester</label>
+				<select class="form-select" id="semester" name="semester" required>
+					<option value="">Select Semester</option>
+					<option value="1">1st Semester</option>
+					<option value="2">2nd Semester</option>
+					<option value="3">3rd Semester</option>
+					<option value="4">4th Semester</option>
+					<option value="5">5th Semester</option>
+					<option value="6">6th Semester</option>
+					<option value="7">7th Semester</option>
+					<option value="8">8th Semester</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Skills <span style="color:#888;font-size:0.95em;">(comma separated)</span></label>
+				<input type="text" class="form-control" id="skills" name="skills" required placeholder="e.g. Python, Data Analysis, ML">
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Career Goal</label>
+				<input type="text" class="form-control" id="career_goal" name="career_goal" required placeholder="e.g. Software Engineer, Data Scientist">
+			</div>
+		</div>
+		<div id="staff-fields" style="display:none;">
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Staff Branch</label>
+				<select class="form-select" id="branch_staff" name="branch_staff" required>
+					<option value="">Select Branch</option>
+					<option value="Artificial intelligence and data science">Artificial intelligence and data science</option>
+					<option value="Atificial Intelligence and machine learning">Atificial Intelligence and machine learning</option>
+					<option value="Computer science Engineering">Computer science Engineering</option>
+					<option value="Electronic communication Engineering">Electronic communication Engineering</option>
+					<option value="Information Technology">Information Technology</option>
+					<option value="Electrical and Electronics Engineering">Electrical and Electronics Engineering</option>
+					<option value="Mechanical Engineering">Mechanical Engineering</option>
+					<option value="Civil Engineering">Civil Engineering</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Subject Name</label>
+				<input type="text" class="form-control" id="subject" name="subject" >
+			</div>
+			<div class="mb-3">
+				<label class="form-label pathpilot-form-label">Syllabus (Upload file: PDF, DOCX, or TXT)</label>
+				<input type="file" class="form-control" id="syllabus" name="syllabus" accept=".pdf,.doc,.docx,.txt">
+			</div>
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label class="form-label pathpilot-form-label">Total Class Periods</label>
+					<input type="number" class="form-control" id="total_periods" name="total_periods" min="1">
+				</div>
+				<div class="col-md-6 mb-3">
+					<label class="form-label pathpilot-form-label">Duration per period (minutes)</label>
+					<input type="number" class="form-control" id="duration" name="duration" min="1">
+				</div>
+			</div>
+		</div>
+		<button type="submit" class="pathpilot-btn" id="generate-btn">
+			<span id="btn-text">Generate Map</span>
+			<span class="spinner-border spinner-border-sm pathpilot-spinner" id="spinner" role="status" aria-hidden="true"></span>
+		</button>
+	</form>
+	<div id="result" class="pathpilot-timeline"></div>
+</div>
+<script>
+// Auto-detect role from URL or portal, show only relevant fields
+function getRoleFromURL() {
+	const params = new URLSearchParams(window.location.search);
+	if (params.get('role')) return params.get('role');
+	// fallback: check if path contains staff
+	if (window.location.pathname.includes('staff')) return 'Staff';
+	return 'Student';
+}
+function updateRoleFields() {
+	const role = getRoleFromURL();
+	document.getElementById('role').value = role;
+	if (role === 'Student') {
+		document.getElementById('student-fields').style.display = '';
+		document.getElementById('staff-fields').style.display = 'none';
+		// Set required for student fields
+		document.getElementById('branch_student').required = true;
+		document.getElementById('year').required = true;
+		document.getElementById('degree').required = true;
+		document.getElementById('skills').required = true;
+		document.getElementById('career_goal').required = true;
+		// Remove required for staff fields
+		document.getElementById('branch_staff').required = false;
+		document.getElementById('subject').required = false;
+		document.getElementById('syllabus').required = false;
+		document.getElementById('total_periods').required = false;
+		document.getElementById('duration').required = false;
+	} else {
+		document.getElementById('student-fields').style.display = 'none';
+		document.getElementById('staff-fields').style.display = '';
+		// Set required for staff fields
+		document.getElementById('branch_staff').required = true;
+		document.getElementById('subject').required = true;
+		document.getElementById('syllabus').required = true;
+		document.getElementById('total_periods').required = true;
+		document.getElementById('duration').required = true;
+		// Remove required for student fields
+		document.getElementById('branch_student').required = false;
+		document.getElementById('year').required = false;
+		document.getElementById('degree').required = false;
+		document.getElementById('skills').required = false;
+		document.getElementById('career_goal').required = false;
+	}
+}
+document.addEventListener('DOMContentLoaded', function() {
+	updateRoleFields();
+	// Set heading based on role
+	const role = getRoleFromURL();
+	const titleEl = document.getElementById('pathpilot-title');
+	if (titleEl) {
+		if (role === 'Student') {
+			titleEl.textContent = 'Path Pilot: Career Map Generator';
+		} else if (role === 'Staff') {
+			titleEl.textContent = 'Profes Pro: Course Map Generator';
+		} else {
+			titleEl.textContent = 'Path Pilot: Course & Career Map Generator';
+		}
+	}
+});
+
+// AJAX form submit
+const form = document.getElementById('pathpilot-form');
+const btn = document.getElementById('generate-btn');
+const btnText = document.getElementById('btn-text');
+const spinner = document.getElementById('spinner');
+const resultDiv = document.getElementById('result');
+form.addEventListener('submit', async function(e) {
+	e.preventDefault();
+	// Validate
+	let valid = true;
+	const role = document.getElementById('role').value;
+	function isEmpty(val) { return !val || !val.trim(); }
+			if (role === 'Student') {
+				if (isEmpty(form.branch_student.value)) valid = false;
+				if (isEmpty(form.year.value)) valid = false;
+				if (isEmpty(form.degree.value)) valid = false;
+				if (isEmpty(form.semester.value)) valid = false;
+				if (isEmpty(form.skills.value)) valid = false;
+				if (isEmpty(form.career_goal.value)) valid = false;
+			} else {
+		if (isEmpty(form.branch_staff.value)) valid = false;
+		if (isEmpty(form.subject.value)) valid = false;
+		if (!form.syllabus.files[0]) valid = false;
+		if (!form.total_periods.value || form.total_periods.value < 1) valid = false;
+		if (!form.duration.value || form.duration.value < 1) valid = false;
+	}
+	if (!valid) {
+		resultDiv.innerHTML = `<div class='alert alert-danger'>Please fill all required fields.</div>`;
+		form.reportValidity();
+		return;
+	}
+	btn.disabled = true;
+	spinner.style.display = 'inline-block';
+	btnText.textContent = 'Generating...';
+	resultDiv.innerHTML = '';
+	let data = {};
+			if (role === 'Student') {
+				data = {
+					role: 'Student',
+					branch: form.branch_student.value.trim(),
+					year: form.year.value.trim(),
+					degree: form.degree.value.trim(),
+					semester: form.semester.value.trim(),
+					skills: form.skills.value.trim(),
+					career_goal: form.career_goal.value.trim()
+				};
+				sendData(data);
+			} else {
+		// Read file as text (for txt, docx, pdf)
+		const file = form.syllabus.files[0];
+		if (!file) return;
+		const reader = new FileReader();
+			reader.onload = async function(event) {
+				let syllabusText = event.target.result;
+				// If PDF, try to extract text (simple fallback)
+				if (file.type === 'application/pdf') {
+					syllabusText = 'PDF syllabus uploaded. Please extract text on backend.';
+				}
+				data = {
+					role: 'Staff',
+					branch: form.branch_staff.value.trim(),
+					subject: form.subject.value.trim(),
+					syllabus: syllabusText,
+					total_periods: form.total_periods.value,
+					duration: form.duration.value
+				};
+				console.log('Staff data to send:', data);
+				sendData(data);
+			};
+		if (file.type.startsWith('text/')) {
+			reader.readAsText(file);
+		} else {
+			reader.readAsDataURL(file); // fallback for binary
+		}
+		return;
+	}
+});
+
+async function sendData(data) {
+	try {
+		const resp = await fetch("{% url 'course_map' %}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': '{{ csrf_token }}',
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await resp.json();
+		if (json.error) {
+			resultDiv.innerHTML = `<div class='alert alert-danger'>${json.error}</div>`;
+		} else {
+			let role = data.role;
+			if (!window.currentMapPlan) window.currentMapPlan = {};
+			Object.assign(window.currentMapPlan, json.plan);
+			renderTimeline(window.currentMapPlan);
+			sessionStorage.setItem('pathpilot_last_plan', JSON.stringify(window.currentMapPlan));
+			// Semester batching for students
+			if (role === 'Student' && json.has_more && json.next_semester) {
+				let moreBtn = document.getElementById('generate-more-btn');
+				let label = `Generate Semester ${json.next_semester}`;
+				if (!moreBtn) {
+					moreBtn = document.createElement('button');
+					moreBtn.className = 'pathpilot-btn';
+					moreBtn.id = 'generate-more-btn';
+					moreBtn.textContent = label;
+					moreBtn.style.marginLeft = '10px';
+					resultDiv.appendChild(moreBtn);
+				} else {
+					moreBtn.textContent = label;
+					moreBtn.style.display = '';
+				}
+				moreBtn.onclick = function() {
+					moreBtn.disabled = true;
+					let nextData = { ...data, semester: json.next_semester };
+					sendData(nextData);
+				};
+			} else if (role === 'Staff' && json.has_more) {
+				// Staff batching logic (unchanged)
+				let moreBtn = document.getElementById('generate-more-btn');
+				let label = `Generate More Periods (${json.next_start}-${json.next_end})`;
+				if (!moreBtn) {
+					moreBtn = document.createElement('button');
+					moreBtn.className = 'pathpilot-btn';
+					moreBtn.id = 'generate-more-btn';
+					moreBtn.textContent = label;
+					moreBtn.style.marginLeft = '10px';
+					resultDiv.appendChild(moreBtn);
+				} else {
+					moreBtn.textContent = label;
+					moreBtn.style.display = '';
+				}
+				moreBtn.onclick = function() {
+					moreBtn.disabled = true;
+					let nextData = { ...data };
+					nextData.start = json.next_start;
+					nextData.end = json.next_end;
+					sendData(nextData);
+				};
+			} else {
+				let moreBtn = document.getElementById('generate-more-btn');
+				if (moreBtn) moreBtn.style.display = 'none';
+			}
+		}
+	} catch (err) {
+		resultDiv.innerHTML = `<div class='alert alert-danger'>Unable to generate roadmap right now. Please try again later.</div>`;
+	} finally {
+		btn.disabled = false;
+		spinner.style.display = 'none';
+		btnText.textContent = 'Generate Map';
+	}
+}
+// Render timeline/flow
+function renderTimeline(plan) {
+	// Parse plan if it's a string (AI or backend bug)
+	if (typeof plan === 'string') {
+		try {
+			plan = JSON.parse(plan);
+		} catch (e) {
+			resultDiv.innerHTML = '<div class="alert alert-danger">Failed to parse roadmap data.</div>';
+			return;
+		}
+	}
+	window.currentMapPlan = plan;
+	// Debug: log plan structure
+	console.log('PathPilot plan:', plan);
+	if (!plan || Object.keys(plan).length === 0) {
+		resultDiv.innerHTML = '<div class="alert alert-warning">No roadmap generated.</div>';
+		// Disable save button if present
+		const saveBtn = document.getElementById('save-map-btn');
+		if (saveBtn) saveBtn.disabled = true;
+		return;
+	}
+	let html = '';
+	let role = document.getElementById('role') ? document.getElementById('role').value : 'Student';
+	if (role === 'Student' && plan && Object.keys(plan).some(k => k.startsWith('Semester'))) {
+		// Semester-based plan: each semester is a section, each has steps
+		for (const [semester, steps] of Object.entries(plan)) {
+			html += `<div class='timeline-item'><div class='timeline-dot'></div><div class='timeline-content'>`;
+			html += `<div class='timeline-title' style='font-size:1.2em;color:#ff9800;'>${semester}</div>`;
+			if (typeof steps === 'object' && steps !== null) {
+				for (const [step, details] of Object.entries(steps)) {
+					html += `<div style='margin-left:18px;margin-bottom:10px;'>`;
+					html += `<div class='timeline-title' style='font-size:1em;color:#27a3e2;'>${step}</div>`;
+					html += `<div class='timeline-topic'>Topic: ${details.Topic || ''}</div>`;
+					html += `<div><strong>Hints:</strong> ${details.Hints || '-'}</div>`;
+					html += `<div><strong>Resources:</strong> ${details.Resources || '-'}</div>`;
+					html += `</div>`;
+				}
+			}
+			html += `</div></div>`;
+		}
+	} else {
+		// Default: flat steps/periods
+		let stepNum = 1;
+		for (const [key, details] of Object.entries(plan)) {
+			let stepLabel = (role === 'Staff') ? key : key;
+			html += `<div class='timeline-item'>
+				<div class='timeline-dot'></div>
+				<div class='timeline-content'>
+					<div class='timeline-title'>${stepLabel}</div>
+					<div class='timeline-topic'>Topic: ${details.Topic || ''}</div>
+					<div><strong>Periods:</strong> ${details.Periods || '-'}</div>
+					<div><strong>Hints:</strong> ${details.Hints || '-'}</div>
+					<div><strong>Resources:</strong> ${details.Resources || '-'}</div>
+				</div>
+			</div>`;
+		}
+	}
+	html += `<button class='pathpilot-btn' onclick='downloadPDF()'>Download as PDF</button>`;
+	html += `<button class='pathpilot-btn' id='save-map-btn' style='margin-left:10px;' disabled>Save to Map History</button>`;
+	resultDiv.innerHTML = html;
+	// Enable save button only if plan is not empty
+	const saveBtn = document.getElementById('save-map-btn');
+	if (saveBtn) {
+		saveBtn.disabled = false;
+		saveBtn.onclick = function() {
+			let title = prompt('Enter a title for this map:', 'PathPilot Map');
+			if (!title) return;
+			fetch('{% url "save_map" %}', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRFToken': '{{ csrf_token }}',
+				},
+				body: JSON.stringify({
+					title: title,
+					plan: window.currentMapPlan,
+					role: document.getElementById('role').value
+				})
+			}).then(resp => resp.json()).then(json => {
+				if (json.success) {
+					alert('Map saved to history!');
+				} else {
+					alert('Failed to save map.');
+				}
+			});
+		};
+	}
+}
+// Do not restore last plan on page load; always start with a blank state
+// Download as PDF (placeholder, backend will implement)
+function downloadPDF() {
+	window.open('?download=pdf', '_blank');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Students in {{ department.name }}</h2>
+{% if section_data %}
+    {% for section in section_data %}
+        <h4>Section {{ section.section_label }}</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Roll</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in section.students %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>{{ student.roll }}</td>
+                        <td>{{ student.user.email }}</td>
+                        <td>{{ student.mobile }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">No students in this section.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+{% else %}
+    <p>No students found in this department.</p>
+{% endif %}
+{% endblock %}

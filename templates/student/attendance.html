@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block root %}
+<style>
+	.gp-header-bar {
+    padding: 12px 20px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.home-icon i {
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.home-icon:hover i {
+    transform: scale(1.2);
+}
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left; /* ensures left alignment */
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+	.table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 0;
+	}
+	.table thead th {
+		background: #1976d2;
+		color: #fff;
+		font-weight: 700;
+		text-align: center;
+		padding: 10px;
+		border: none;
+		border-radius: 0;
+	}
+	.table tbody td {
+		text-align: center;
+		vertical-align: middle;
+		padding: 12px 8px;
+		border-bottom: 1px solid #e0e0e0;
+		color: #333;
+		font-size: 14px;
+	}
+	.table tbody tr:last-child td {
+		border-bottom: none;
+	}
+	.progress {
+		height: 24px;
+		background: #e3e6f0;
+		border-radius: 12px;
+		overflow: hidden;
+		margin-bottom: 0;
+	}
+	.progress-bar {
+		font-weight: bold;
+		font-size: 15px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	@media (max-width: 767px) {
+		/* Keep each subject row on one horizontal line: subject left, percentage right */
+		.table thead { display: none; }
+		.table tbody tr { display: flex; flex-direction: row; justify-content: space-between; align-items: center; }
+		.table tbody td { display: flex; align-items: center; padding: 8px 10px; border-bottom: 1px solid #e0e0e0; text-align: left; }
+		.table tbody td:first-child { flex: 1 1 auto; padding-left: 6px; }
+		.table tbody td:last-child { flex: 0 0 140px; min-width: 110px; }
+		.progress { width: 100%; }
+		.progress-bar { font-size: 14px; }
+	}
+</style>
+
+<div class="row" style="margin-top: 16px;">
+	<div class="col-lg-12">
+		<div class="card">
+			<div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+                    <span class="header-title">Attendance</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
+			<div class="card-body">
+				{% if error %}
+					<div class="alert alert-danger">{{ error }}</div>
+				{% else %}
+					<div class="mb-3">
+						{% if subject_percentages %}
+						<div class="table-responsive">
+							<table class="table table-bordered">
+								<thead>
+									<tr>
+										<th>Subject</th>
+										<th>Percentage</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for entry in subject_percentages %}
+									<tr>
+										<td>{{ entry.subject.name }}</td>
+										<td style="min-width:200px;">
+											<div class="progress">
+												<div class="progress-bar {% if entry.percentage >= 75 %}bg-success{% elif entry.percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+													 role="progressbar"
+													 style="width: {{ entry.percentage }}%;"
+													 aria-valuenow="{{ entry.percentage }}" aria-valuemin="0" aria-valuemax="100">
+													{{ entry.percentage }}%
+												</div>
+											</div>
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+						{% else %}
+						<div class="alert alert-info">Attendance data is not available.</div>
+						{% endif %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% if grouped_absences %}
+<div class="row" style="margin-top:12px;">
+	<div class="col-lg-12">
+		<div class="card">
+			<div class="card-header">Recent Absences</div>
+			<div class="card-body">
+				<div class="list-group">
+					{% for g in grouped_absences %}
+						{% if g.count == 1 %}
+							{% with a=g.absences.0 %}
+							<div class="list-group-item d-flex justify-content-between align-items-center">
+								<div>
+									<strong>{{ a.date|date:"d M Y" }}</strong>
+									&nbsp;—&nbsp; {{ g.subject_name }}
+								</div>
+								<span class="badge badge-danger">{{ a.status }}</span>
+							</div>
+							{% endwith %}
+						{% else %}
+							{# Multiple absences for same subject: collapsible #}
+							<div class="list-group-item">
+								<div class="d-flex justify-content-between align-items-center">
+									<div>
+										<strong>{{ g.subject_name }}</strong>
+										&nbsp;(<small>{{ g.count }} absences</small>)
+									</div>
+									<div>
+										<a class="btn btn-sm btn-outline-primary" data-toggle="collapse" href="#absences-{{ forloop.counter }}" role="button" aria-expanded="false" aria-controls="absences-{{ forloop.counter }}">View</a>
+									</div>
+								</div>
+								<div class="collapse mt-2" id="absences-{{ forloop.counter }}">
+									<ul class="list-unstyled mb-0">
+										{% for a in g.absences %}
+										<li class="py-1 d-flex justify-content-between">
+											<div>{{ a.date|date:"d M Y" }}</div>
+											<div><span class="badge badge-danger">{{ a.status }}</span></div>
+										</li>
+										{% endfor %}
+									</ul>
+								</div>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% endblock %}

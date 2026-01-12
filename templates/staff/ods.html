@@ -1,0 +1,583 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_header %}{% endblock %}
+
+{% block root %}
+
+<!-- year filter retained -->
+<form method="get" class="form-inline mb-3">
+    <label for="year" class="mr-2"><b>Filter by Year:</b></label>
+    <select name="year" id="year" class="form-control mr-2">
+        <option value="">All Years</option>
+        <option value="1" {% if request.GET.year == '1' %}selected{% endif %}>1st Year</option>
+        <option value="2" {% if request.GET.year == '2' %}selected{% endif %}>2nd Year</option>
+        <option value="3" {% if request.GET.year == '3' %}selected{% endif %}>3rd Year</option>
+        <option value="4" {% if request.GET.year == '4' %}selected{% endif %}>4th Year</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<style>
+    /* Reuse student OD history styles for staff pages */
+    .od-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        overflow: visible;
+        /* allow horizontal scrolling if the grid is wider than the container */
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    .od-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.125rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .od-table-header .header-title {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    hr.od-divider {
+        margin: 0;
+        border: 0;
+        height: 2px;
+        background: linear-gradient(to right, #e0e7ff, #e0e0e0);
+    }
+
+    .od-header, .od-row {
+        display: grid;
+        /* Use percentage-based columns so the entire table width is justified and
+           both header and rows use identical column widths. This keeps columns
+           aligned across the full table width. */
+          /* Adjusted column distribution: smaller NAME (22%), stable FROM-TO and Submitted columns,
+              larger VIEW and ACTION columns so buttons don't overflow/hide to the right. */
+          grid-template-columns: 8% 22% 16% 20% 14% 20%;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        line-height: 1.4;
+    }
+    .od-header { 
+        background: #f5f7fa;
+        color: #2c3e50;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .od-header > div {
+        padding: 4px 8px;
+        text-align: left;
+    }
+    .od-row {
+        transition: background-color 0.15s ease;
+    }
+    .od-row:nth-child(even) { background: #f8fafc; }
+    .od-row:hover { background: #f1f5f9; }
+    .od-id { 
+        font-weight: 600;
+        color: #1976d2;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+    /* Date formatting */
+    .od-row > div[data-label="FROM-TO"] {
+        font-size: 0.9rem;
+        /* keep the FROM-TO block at its column width and allow the two dates to stack */
+        white-space: normal;
+        line-height: 1.6;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .od-row > div[data-label="Submitted At"] {
+        font-size: 0.9rem;
+        white-space: normal;
+    }
+    /* Align specific columns */
+    .od-row > div,
+    .od-header > div {
+        padding: 4px 8px;
+    }
+    .od-row > div:nth-child(1),  /* ID */
+    .od-header > div:nth-child(1) {
+        text-align: left;
+    }
+    .od-row > div:nth-child(2),  /* Name */
+    .od-header > div:nth-child(2) {
+        text-align: left;
+        /* truncate long names and prevent them from expanding the grid */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Slightly reduce padding inside cells so columns appear tighter */
+    .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+    /* Prevent header cells from wrapping which can misalign columns */
+    .od-header > div { white-space: nowrap; }
+    .od-row > div:nth-child(3),  /* From-To */
+    .od-header > div:nth-child(3) {
+        text-align: center;
+        white-space: normal;
+    }
+    .od-row > div:nth-child(4),  /* Submitted At */
+    .od-header > div:nth-child(4) {
+        text-align: center;
+    }
+    .od-row > div:nth-child(5),  /* Status */
+    .od-header > div:nth-child(5) {
+        text-align: left;
+    }
+    /* Ensure VIEW and ACTION columns align and don't clip their contents */
+    .od-row > div:nth-child(5), .od-header > div:nth-child(5),
+    .od-row > div:nth-child(6), .od-header > div:nth-child(6) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .od-row > div:nth-child(6), .od-header > div:nth-child(6) { justify-content: flex-start; }
+    
+    /* Stack VIEW buttons vertically */
+    .od-row > div[data-label="VIEW"] {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: stretch;
+    }
+    .od-row > div[data-label="VIEW"] .btn {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .od-title {
+        font-weight: 500;
+        color: #334155;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.75rem;
+        text-align: center;
+        letter-spacing: 0.3px;
+        line-height: 1.2;
+        min-width: 80px;
+    }
+    .badge-Approved {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .badge-Pending {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fcd34d;
+    }
+    .badge-Rejected {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .badge-secondary {
+        background: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #d1d5db;
+    }
+
+     /* Make action buttons render inline and wrap if needed so they remain visible
+         without pushing content out of the grid. Align to start so buttons appear
+         next to the VIEW column rather than being clipped to the far right. */
+     .od-actions { display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-start; }
+    .file-upload-label, .btn-upload, .btn-outline-primary { padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem; }
+
+    /* Prevent action buttons from wrapping their text and ensure input-groups
+       inside the action column lay out horizontally */
+    .od-actions .btn, .od-actions .input-group .btn, .od-actions .input-group select {
+        white-space: nowrap;
+    }
+    .od-actions .input-group { display: flex; gap: 6px; align-items: center; }
+
+    /* Modal styles */
+    .modal-dialog {
+        max-width: 600px;
+        margin: 1.75rem auto;
+    }
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header {
+        background: #1976d2;
+        color: #fff;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+    .modal-header .modal-title {
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+    .modal-header .close {
+        color: #fff;
+        text-shadow: none;
+        opacity: 0.9;
+    }
+    .modal-header .close:hover {
+        opacity: 1;
+    }
+    .modal-body {
+        padding: 1.5rem;
+    }
+    .od-detail-item {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .od-detail-item:last-child {
+        border-bottom: none;
+    }
+    .od-detail-label {
+        font-weight: 600;
+        color: #4b5563;
+        font-size: 0.9375rem;
+    }
+    .od-detail-value {
+        color: #1f2937;
+        font-size: 0.9375rem;
+    }
+    .submitted-time {
+        background: #f0f7ff;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #1976d2;
+    }
+    .submitted-time .od-detail-label {
+        color: #1976d2;
+    }
+    .submitted-time .od-detail-value {
+        color: #1e40af;
+        font-weight: 500;
+    }
+    .file-upload-label { background: #1976d2; color: #fff; }
+    .file-upload-label:hover { background: #1565c0; }
+    .btn-upload { background: #4caf50; border: none; color: #fff; }
+    .btn-upload:hover { background: #388e3c; }
+
+    /* Status grid layout */
+    .status-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 8px;
+        align-items: center;
+    }
+    .status-label {
+        color: #4b5563;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: right;
+        padding-right: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .od-table { padding: 8px; }
+        .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
+        .od-header div { display: none; }
+        .od-row { border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff; }
+        /* Stacked card: label above value for each field to ensure no horizontal gaps */
+        .od-row > div { display: block; padding: 6px 0; }
+        .od-row > div::before { content: attr(data-label); display: block; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .od-row > div > * { display: block; min-width: 0; }
+        /* Allow long names and values to wrap on mobile */
+        .od-row > div[data-label="NAME"],
+        .od-row > div[data-label="FROM-TO"],
+        .od-row > div[data-label="STATUS"] { white-space: normal; overflow: visible; }
+        /* Keep VIEW and ACTION grouped horizontally but allow wrapping */
+        .od-row > div[data-label="VIEW"], .od-row > div[data-label="ACTION"] {
+            display: flex; flex-direction: row; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-start;
+        }
+        .od-row > div[data-label="VIEW"] > *, .od-row > div[data-label="ACTION"] > * { margin: 0; }
+        /* On very small screens, make view/action controls full-width stacked to avoid clipping */
+        .od-row > div[data-label="VIEW"] button, .od-row > div[data-label="VIEW"] .btn { width: 100%; }
+        .od-row > div[data-label="ACTION"] .od-actions { flex-direction: column; gap: 6px; }
+        .od-row > div[data-label="ACTION"] .od-actions .btn, .od-row > div[data-label="ACTION"] .od-actions .input-group { width: 100%; }
+        .od-row > div[data-label="ACTION"] .od-actions .input-group select { width: 100%; }
+        /* Status grid: make it vertical but compact */
+        .status-grid { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .status-grid .status-label { text-align: left; padding-right: 0; }
+    }
+</style>
+
+<!-- Mentees ODs -->
+<div class="od-table">
+                <div class="od-table-header" style="position:relative;display:flex;justify-content:space-between;align-items:center;">
+        <span class="header-title">Mentees OD's</span>
+        <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:white;">
+            <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+        </a>
+    </div>
+    <hr class="od-divider">
+
+    <div class="od-header">
+        <div>ID</div>
+        <div>NAME</div>
+        <div>FROM - TO</div>
+        <div>STATUS</div>
+        <div>VIEW</div>
+        <div>ACTION</div>
+    </div>
+
+    {% with filtered_mods=mods|dictsort:"id" %}
+    {% for i in filtered_mods %}
+        {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+        <div class="od-row">
+                <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
+                <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+            <div data-label="STATUS">
+                <div class="status-grid">
+                    <div class="status-label">Mentor:</div>
+                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                    <div class="status-label">Advisor:</div>
+                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                    <div class="status-label">AHOD:</div>
+                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+                    <div class="status-label">HOD:</div>
+                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                </div>
+            </div>
+            <div data-label="VIEW">
+                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#OD{{i.id}}</small></button>
+                {% if i.certificate %}
+                <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#certModal{{i.id}}">View Certificate</button>
+                {% endif %}
+            </div>
+            <div class="od-actions" data-label="ACTION">
+                {% if i.Mstatus == "Rejected" %}
+                    <button class="btn btn-danger" disabled>{{ i.Mstatus }}</button>
+                {% elif i.Mstatus != "Approved" %}
+                    <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="mentor">
+                        <div class="input-group">
+                            <select name="sts" class="form-control">
+                                <option value="Approved">Approve</option>
+                                <option value="Rejected">Reject</option>
+                            </select>
+                            <button type="submit" class="btn btn-success">submit</button>
+                        </div>
+                    </form>
+                {% elif i.Astatus == "Rejected" %}
+                    <button class="btn btn-danger" disabled>{{ i.Astatus }} (Advisor)</button>
+                {% elif i.Astatus != "Approved" %}
+                    <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="advisor">
+                        <div class="input-group">
+                            <select name="sts" class="form-control">
+                                <option value="Approved">Approve</option>
+                                <option value="Rejected">Reject</option>
+                            </select>
+                            <button type="submit" class="btn btn-success">submit as Advisor</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <button class="btn btn-success">Approved</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    {% if filtered_mods|length == 0 %}
+        <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+<!-- Class ODs -->
+<div class="od-table">
+    <div class="od-table-header">
+        <span class="header-title">Class ODS</span>
+    </div>
+    <hr class="od-divider">
+
+    <div class="od-header">
+        <div>ID</div>
+        <div>NAME</div>
+        <div>FROM - TO</div>
+        <div>STATUS</div>
+        <div>VIEW</div>
+        <div>ACTION</div>
+    </div>
+
+    {% with filtered_aods=aods|dictsort:"id" %}
+    {% for i in filtered_aods %}
+        {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+        <div class="od-row">
+            <div class="od-id" data-label="ID">#OD{{ i.id }}</div>
+            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+            <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+            <div data-label="STATUS">
+                <div class="status-grid">
+                    <div class="status-label">Mentor:</div>
+                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                    <div class="status-label">Advisor:</div>
+                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                    <div class="status-label">AHOD:</div>
+                    <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span>
+                    <div class="status-label">HOD:</div>
+                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                </div>
+            </div>
+            <div data-label="VIEW">
+                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}"><small>#OD{{i.id}}</small></button>
+                {% if i.certificate %}
+                <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#certModal{{i.id}}">View Certificate</button>
+                {% endif %}
+            </div>
+            <div class="od-actions" data-label="ACTION">
+                {% if i.Hstatus == "Rejected" or i.Mstatus == "Rejected" or i.Astatus == "Rejected" or i.AHstatus == "Rejected" %}
+                    <button class="btn btn-danger" disabled>Rejected</button>
+                {% elif i.Mstatus == "Approved" %}
+                    {% if i.Astatus == "Approved" %}
+                        <button class="btn btn-success">{{ i.Astatus }}</button>
+                    {% else %}
+                        <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="role" value="advisor">
+                            <div class="input-group">
+                                <select name="sts" class="form-control">
+                                    <option value="Approved">Approve</option>
+                                    <option value="Rejected">Reject</option>
+                                    <option value="Meet Me">Meet Me</option>
+                                </select>
+                                <button type="submit" class="btn btn-success">submit</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <form action="{% url 'staff_action_od' i.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="role" value="advisor">
+                        <div class="input-group">
+                            <select name="sts" class="form-control">
+                                <option value="Approved">Approve</option>
+                                <option value="Rejected">Reject</option>
+                                <option value="Meet Me">Meet Me</option>
+                            </select>
+                            <button type="submit" class="btn btn-success">submit</button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+    {% if filtered_aods|length == 0 %}
+        <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+    {% endif %}
+    {% endwith %}
+</div>
+
+<!-- Per-row modals: render the same modals the original template used so buttons work -->
+{% comment %} Certificate and Detail modals are rendered per OD below {% endcomment %}
+{% with all_items=mods|default_if_none:""|add:aods %}
+    {% for od in all_items %}
+        <div class="modal fade" id="certModal{{od.id}}" tabindex="-1" role="dialog" aria-labelledby="certModalLabel{{od.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="certModalLabel{{od.id}}">OD Certificate Preview</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        {% if od.certificate %}
+                            {% if ".pdf" in od.certificate.url|lower %}
+                                <embed src="{{od.certificate.url}}" type="application/pdf" width="100%" height="500px" />
+                            {% else %}
+                                <img src="{{od.certificate.url}}" alt="Certificate" style="max-width:100%; max-height:500px;" />
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">No certificate uploaded</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="detail{{od.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{od.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailLabel{{od.id}}">OD Details for {{od.user.name}}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="submitted-time">
+                            <div class="od-detail-item" style="border: none; padding: 0;">
+                                <span class="od-detail-label">
+                                    <i class="fa fa-clock-o"></i> Submitted At:
+                                </span>
+                                <span class="od-detail-value">{{od.created|date:"d M Y, h:i A"}}</span>
+                            </div>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Subject:</span>
+                            <span class="od-detail-value">{{od.sub}}</span>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Reason:</span>
+                            <span class="od-detail-value">{{od.body}}</span>
+                        </div>
+                        {% if od.proof %}
+                        <div class="od-detail-item" style="border: none;">
+                            <span class="od-detail-label">Proof:</span>
+                            <span class="od-detail-value">
+                                <a href="{{od.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endwith %}
+
+{% endblock %}

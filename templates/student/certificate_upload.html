@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block root %}
+<style>
+/* Card header like other pages */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+}
+
+.card-header .header-title {
+    margin: 0;
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+/* Card style */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+    border: none;
+}
+
+/* Form controls */
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+/* File upload button */
+input[type="file"] { display: none; }
+.custom-file-upload {
+    display: inline-block;
+    padding: 8px 16px;
+    cursor: pointer;
+    background: #1976d2;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+.custom-file-upload:hover { background: #1565c0; }
+
+/* Upload button */
+.btn-upload {
+    background: #4caf50;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: 0.3s;
+    margin-left: 10px;
+}
+.btn-upload:hover { background: #388e3c; }
+
+/* Table styling */
+.table thead th {
+    background: #1976d2 !important;
+    color: #fff !important;
+    font-weight: 700;
+    text-align: center;
+}
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+}
+.table tbody tr:hover { background: #e3f2fd; }
+
+@media (max-width: 767px) {
+    .btn-upload, .custom-file-upload { width: 100%; text-align: center; margin-bottom: 8px; }
+}
+</style>
+
+<div class="animated fadeIn mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <!-- Card header with title and home icon -->
+                <div class="card-header" style="border-radius: 8px 8px 0px 0px;">
+                    <span class="header-title">Certificate</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_subject">Subject</label>
+                            {{ form.subject }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_file">Certificate File</label><br>
+                            <label class="custom-file-upload">
+                                {{ form.file }}
+                                Choose File
+                            </label>
+                            <button type="submit" class="btn btn-upload">Upload</button>
+                        </div>
+                    </form>
+
+                    <!-- Uploaded Certificates Table -->
+                    <h5 class="mb-3">Your Uploaded Certificates</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>File</th>
+                                    <th>Uploaded At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cert in uploads %}
+                                <tr>
+                                    <td>{% if cert.subject %}{{ cert.subject }}{% else %}-{% endif %}</td>
+                                    <td><a href="{{ cert.file.url }}" target="_blank">{{ cert.file.name|slice:'12:' }}</a></td>
+                                    <td>{{ cert.uploaded_at|date:"d M Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3">No certificates uploaded yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 0 auto;">
+    <div class="card mt-5">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4" style="font-size: 2rem; color: var(--primary-color);">Upload Resume</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group mb-4">
+                    <label for="id_file" class="font-weight-bold">Resume File</label>
+                    <div class="custom-file">
+                        <input type="file" name="file" class="custom-file-input" id="id_file" required>
+                        <label class="custom-file-label" for="id_file">Choose file</label>
+                    </div>
+                    <small class="form-text text-muted">Accepted formats: PDF, DOCX, TXT</small>
+                </div>
+                <div class="form-group mb-4">
+                    <label for="id_jd" class="font-weight-bold">Job Description</label>
+                    <textarea name="jd" id="id_jd" class="form-control" rows="5" placeholder="Paste the job description here..." required></textarea>
+                    <small class="form-text text-muted">Paste the job description for the target job.</small>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="width: 100%;">Upload Resume</button>
+            </form>
+            <script>
+                // Show selected file name in custom file input
+                document.addEventListener('DOMContentLoaded', function() {
+                    var fileInput = document.querySelector('.custom-file-input');
+                    if (fileInput) {
+                        fileInput.addEventListener('change', function(e) {
+                            var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+                            var label = e.target.nextElementSibling;
+                            if (label) label.textContent = fileName;
+                        });
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>
+{% endblock %}

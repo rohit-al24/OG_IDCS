@@ -1,0 +1,47 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Resumes & ATS Scores</h2>
+
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{% if resume_data and resume_data|length > 0 %}
+  <table style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>Uploaded At</th>
+        <th>File</th>
+        <th>ATS Score</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in resume_data %}
+        <tr>
+          <td>{{ item.resume.uploaded_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ item.resume.file.name|default:"-" }}</td>
+          <td>
+            {% if item.ats_score %}
+              <span style="color:#007bff; font-weight:bold;">{{ item.ats_score }}%</span>
+            {% else %}
+              <span style="color:#888;">Not analyzed</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'ATS:resume_preview' resume_id=item.resume.id %}">Preview</a> |
+            <a href="{% url 'ATS:resume_analysis' resume_id=item.resume.id %}">Analysis</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No resumes uploaded yet.</p>
+{% endif %}
+
+<div style="margin-top:2em;">
+  <a href="{% url 'ATS:upload_resume' %}" class="btn btn-primary">Upload New Resume</a>
+</div>
+{% endblock %}

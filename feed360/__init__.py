@@ -1,0 +1,1 @@
+# feed360 app initialization

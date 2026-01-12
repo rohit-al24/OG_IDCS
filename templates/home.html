@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | KRCT Portal</title>
+    <link rel="stylesheet" href="{% static 'assets/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* ========== HEADER STYLES ========== */
+        .logo-card-right { 
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            right: 0;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 40px; 
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-card-right .header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+
+        .logo-card-right .header-logos { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+
+        .logo-card-right .header-logos img { 
+            height: 60px; 
+            width: auto; 
+            transition: transform 0.3s ease;
+        }
+
+        .logo-card-right .header-logos img:hover { 
+            transform: scale(1.05);
+        }
+
+        .logo-card-right .center-college { 
+            flex: 1; 
+            text-align: center; 
+            padding: 0 20px;
+        }
+
+        .logo-card-right .center-college .line1 { 
+            font-weight: 800; 
+            font-size: 1.8rem; 
+            color: #02448f;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .logo-card-right .center-college .line2 { 
+            font-weight: 700; 
+            font-size: 1.2rem; 
+            color: #ff0000; 
+            margin-top: 5px;
+        }
+
+        .logo-card-right .actions { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+        }
+
+        .logo-card-right .actions a { 
+            background: linear-gradient(135deg, #0b57a4 0%, #094a86 100%);
+            color: #fff; 
+            padding: 10px 24px; 
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(11, 87, 164, 0.3);
+        }
+
+        .logo-card-right .actions a:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(11, 87, 164, 0.4);
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        main { 
+            padding-top: 120px;
+            min-height: calc(100vh - 300px);
+        }
+
+        /* ========== HERO SECTION ========== */
+        .hero-section { 
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .marquee { 
+            position: relative; 
+            height: auto; 
+            overflow: hidden; 
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            background: #fff;
+        }
+
+        .marquee-track { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            will-change: transform;
+            padding: 10px;
+        }
+
+        .marquee-item { 
+            flex: 0 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+
+        .marquee-item img { 
+            height: auto; 
+            width: auto; 
+            max-width: 100%; 
+            object-fit: contain; 
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .marquee-item img:hover {
+            transform: scale(1.02);
+        }
+
+        .marquee-btn { 
+            position: absolute; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: rgba(11, 87, 164, 0.8);
+            color: #fff; 
+            border: none;
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            z-index: 10;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .marquee-prev { left: 15px; }
+        .marquee-next { right: 15px; }
+
+        .marquee-btn:hover { 
+            background: rgba(11, 87, 164, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* ========== ABOUT SECTION ========== */
+        .about-container { 
+            max-width: 1200px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 50px 60px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-container h2 { 
+            color: #02448f;
+            font-size: 2rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #0b57a4;
+            display: inline-block;
+        }
+
+        .about-container h4 { 
+            color: #02448f;
+            font-size: 1.3rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .about-container p,
+        .about-container ul { 
+            color: #555;
+            line-height: 1.8;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .about-container ul { 
+            margin-left: 25px;
+        }
+
+        .about-container ul li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .about-container strong {
+            color: #02448f;
+        }
+
+        .about-container code {
+            background: #f4f6f8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #e74c3c;
+            font-size: 0.9em;
+        }
+
+        /* Empty notice message */
+        .alert { 
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: #02448f;
+            text-align: center;
+            max-width: 1200px;
+            margin: 40px auto;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ========== FOOTER STYLES ========== */
+        .site-footer {
+            background: linear-gradient(135deg, #08364f 0%, #051e2e 100%);
+            color: #f4f6f8;
+            padding: 50px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .footer-col h3 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #0b57a4 0%, #5dade2 100%);
+            height: 3px;
+            width: 60px;
+            border-radius: 2px;
+        }
+
+        .footer-col p {
+            margin-bottom: 12px;
+            line-height: 1.8;
+            color: #d4e6f1;
+        }
+
+        .footer-col strong {
+            color: #fff;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .social-links .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links .social-icon:hover {
+            background: #0b57a4;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(11, 87, 164, 0.4);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: #d4e6f1;
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+        @media (max-width: 768px) {
+            .logo-card-right {
+                flex-direction: row;
+                padding: 12px 15px;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo-card-right .header-left {
+                flex: 1;
+            }
+
+            .logo-card-right .header-logos {
+                gap: 8px;
+                justify-content: flex-start;
+            }
+
+            .logo-card-right .header-logos img {
+                height: 40px;
+            }
+
+            /* Hide college name on mobile */
+            .logo-card-right .center-college {
+                display: none;
+            }
+
+            .logo-card-right .actions {
+                flex-shrink: 0;
+            }
+
+            .logo-card-right .actions a {
+                padding: 8px 18px;
+                font-size: 0.9rem;
+            }
+
+            main {
+                padding-top: 80px;
+            }
+
+            .hero-section {
+                padding: 0 15px;
+                margin: 20px auto;
+            }
+
+            .about-container {
+                padding: 25px 20px;
+                margin: 30px 15px;
+            }
+
+            .about-container h2 {
+                font-size: 1.5rem;
+            }
+
+            .about-container h4 {
+                font-size: 1.1rem;
+            }
+
+            .about-container p,
+            .about-container ul {
+                font-size: 0.95rem;
+            }
+
+            .footer-container {
+                flex-direction: column;
+                padding: 0 20px;
+            }
+
+            .footer-col h3::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .footer-col {
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .marquee-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-card-right {
+                padding: 10px 12px;
+            }
+
+            .logo-card-right .header-logos {
+                gap: 6px;
+            }
+
+            .logo-card-right .header-logos img {
+                height: 35px;
+            }
+
+            .logo-card-right .actions a {
+                padding: 7px 15px;
+                font-size: 0.85rem;
+            }
+
+            main {
+                padding-top: 70px;
+            }
+
+            .about-container {
+                padding: 20px 15px;
+            }
+
+            .about-container h2 {
+                font-size: 1.3rem;
+            }
+
+            .about-container h4 {
+                font-size: 1rem;
+            }
+
+            .marquee-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+
+            .marquee-prev { left: 8px; }
+            .marquee-next { right: 8px; }
+        }
+
+        @media (min-width: 1400px) {
+            .about-container {
+                padding: 60px 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fixed Header -->
+    <header class="logo-card-right">
+        <div class="header-left">
+            <div class="header-logos">
+                <img src="{% static 'images/download.png' %}" alt="KRCT Logo">
+                <img src="{% static 'images/e-logon.png' %}" alt="E-Logo">
+                <img src="{% static 'images/nba_logo.jpg' %}" alt="NBA Logo">
+                <img src="{% static 'images/tnea_code.gif' %}" alt="TNEA Code">
+            </div>
+        </div>
+        <div class="center-college">
+            <div class="line1">K.Ramakrishnan College of Technology</div>
+            <div class="line2">Autonomous</div>
+        </div>
+        <div class="actions">
+            <a href="/login">Login</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section with Marquee -->
+        <!-- <section class="hero-section" aria-labelledby="hero-posters">
+            {% if notices %}
+                <div class="marquee" id="marquee">
+                    <button class="marquee-btn marquee-prev" id="marquee-prev" aria-label="Previous">‹</button>
+                    <button class="marquee-btn marquee-next" id="marquee-next" aria-label="Next">›</button>
+                    <div class="marquee-track" id="marquee-track">
+                        {% for notice in notices %}
+                            {% if notice.image %}
+                                <div class="marquee-item">
+                                    <img src="{{ notice.image.url }}" alt="{{ notice.title|default:'Notice' }}">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div class="about-container">
+                    <h2>About IDCS Portal</h2>
+                    
+                    <h4>Overview</h4>
+                    <p>
+                        IDCS is a comprehensive academic and student services portal designed for K.Ramakrishnan College of Technology. 
+                        The platform provides role-based interfaces for students, staff, HOD, and AHOD, along with public pages and administrative functions.
+                    </p>
+
+                    <h4>Key Features</h4>
+                    <ul>
+                        <li><strong>Student Portal:</strong> Access dashboard, attendance records, timetables, and apply for bonafide certificates, gate passes, leave requests, and on-duty forms</li>
+                        <li><strong>Staff Portal:</strong> Manage class schedules, handle student requests, send notifications, and track academic activities</li>
+                        <li><strong>HOD/AHOD Portal:</strong> Review and approve applications, view mentee lists, and access department-specific dashboards</li>
+                        <li><strong>ATS System:</strong> Advanced resume analysis and tracking system for placement activities</li>
+                        <li><strong>PathPilot:</strong> Career guidance and academic pathway planning tools</li>
+                        <li><strong>Resume Builder:</strong> Professional resume creation tools for students</li>
+                        <li><strong>Feed360:</strong> Comprehensive feedback system for continuous improvement</li>
+                    </ul>
+
+                    <h4>Technologies Used</h4>
+                    <ul>
+                        <li>Built with Django framework for robust backend operations</li>
+                        <li>Modern responsive design for seamless mobile and desktop experience</li>
+                        <li>Secure authentication and role-based access control</li>
+                        <li>Real-time notifications and updates</li>
+                    </ul>
+
+                    <h4>Get Started</h4>
+                    <p>
+                        Click the <strong>Login</strong> button above to access your personalized dashboard. 
+                        For assistance, please contact the IDCS support team at <code>idcs@krct.ac.in</code>
+                    </p>
+                </div>
+            {% else %}
+                <div class="alert">
+                    <i class="fa fa-info-circle" style="font-size: 1.5rem; margin-bottom: 10px;"></i>
+                    <p>No notices or announcements available at the moment. Please check back later.</p>
+                </div>
+            {% endif %}
+        </section> -->
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Contact Us</h3>
+                <p>
+                    K.Ramakrishnan College of Technology<br>
+                    Samayapuram, Trichy - 621 112<br>
+                    Tamil Nadu, India
+                </p>
+                <p><strong>Phone:</strong> +91 431 2648601</p>
+                <p><strong>Email:</strong> idcs@krct.ac.in</p>
+            </div>
+
+            <div class="footer-col">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/krctofficial" class="social-icon" aria-label="Facebook" target="_blank">
+                        <i class="fa fa-facebook"></i>
+                    </a>
+                    <a href="https://x.com/krcttrichy1" class="social-icon" aria-label="Twitter" target="_blank">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="https://www.instagram.com/krctofficial/" class="social-icon" aria-label="Instagram" target="_blank">
+                        <i class="fa fa-instagram"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/school/krctofficial/" class="social-icon" aria-label="LinkedIn" target="_blank">
+                        <i class="fa fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 K.Ramakrishnan College of Technology. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Marquee Carousel Script -->
+    <script>
+            (function(){
+                var marquee = document.getElementById('marquee');
+                if (!marquee) return;
+                var track = document.getElementById('marquee-track');
+                if (!track) return;
+
+                // Basic styles applied via existing CSS; ensure items are present
+                var items = Array.prototype.slice.call(track.children);
+                if (!items.length) return;
+
+                // Wait for all original images to load so we can size the marquee to the tallest image
+                var origItems = items.slice(0, items.length);
+                var imgPromises = origItems.map(function(it){
+                    var img = it.querySelector('img');
+                    if (!img) return Promise.resolve();
+                    if (img.complete && img.naturalHeight) return Promise.resolve();
+                    return new Promise(function(resolve){ img.addEventListener('load', resolve); img.addEventListener('error', resolve); });
+                });
+
+                    Promise.all(imgPromises).then(function(){
+                    // compute tallest image height
+                    var maxH = 0;
+                    origItems.forEach(function(it){
+                        var img = it.querySelector('img');
+                        if (img && img.naturalHeight) {
+                            var h = img.naturalHeight * (Math.min(img.naturalWidth, marquee.clientWidth) / img.naturalWidth);
+                            // prefer using rendered height if available
+                            var rendered = img.clientHeight;
+                            if (rendered) h = Math.max(h, rendered);
+                            if (h > maxH) maxH = h;
+                        }
+                    });
+                    // fallbacks
+                    if (!maxH || maxH < 80) maxH = Math.min(420, window.innerHeight * 0.5);
+                    marquee.style.height = Math.round(maxH) + 'px';
+
+                    // Now duplicate items until track width >= marquee width * 2 for seamless loop
+                    var startWidth = track.scrollWidth;
+                    var i = 0;
+                    while (track.scrollWidth < marquee.clientWidth * 2) {
+                        var clone = origItems[i % origItems.length].cloneNode(true);
+                        track.appendChild(clone);
+                        i++;
+                        if (i > origItems.length * 6) break; // safety
+                    }
+
+                    // Compute loop width as the width of one original set (approx)
+                    var singleLoopWidth = track.scrollWidth / 2;
+
+                    var pos = 0; // current translateX in px
+                    var baseSpeed = 40; // px per second
+                    var lastTs = null;
+                    var isPaused = false;
+
+                    function step(ts){
+                        if (!lastTs) lastTs = ts;
+                        var dt = (ts - lastTs) / 1000;
+                        lastTs = ts;
+                        if (!isPaused) {
+                            pos += baseSpeed * dt;
+                            if (pos >= singleLoopWidth) pos = pos - singleLoopWidth;
+                            track.style.transform = 'translateX(' + (-pos) + 'px)';
+                        }
+                        requestAnimationFrame(step);
+                    }
+
+                    // Helper to advance by one item's width (approx)
+                    function advanceOne(forward){
+                        // find width of first original item (approx avg)
+                        var first = track.querySelector('.marquee-item');
+                        var stepWidth = first ? first.offsetWidth + 14 : 200; // include gap fallback
+                        if (!forward) stepWidth = -stepWidth;
+                        pos += stepWidth;
+                        if (pos >= singleLoopWidth) pos = pos - singleLoopWidth;
+                        if (pos < 0) pos = singleLoopWidth + pos;
+                        track.style.transform = 'translateX(' + (-pos) + 'px)';
+                    }
+
+                    // Prev/Next buttons
+                    var btnPrev = document.getElementById('marquee-prev');
+                    var btnNext = document.getElementById('marquee-next');
+                    if (btnPrev) btnPrev.addEventListener('click', function(e){ e.stopPropagation(); isPaused = true; advanceOne(false); });
+                    if (btnNext) btnNext.addEventListener('click', function(e){ e.stopPropagation(); isPaused = true; advanceOne(true); });
+
+                    // Clicking any image toggles pause/resume
+                    track.addEventListener('click', function(e){
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+                            isPaused = !isPaused;
+                        }
+                    });
+
+                    requestAnimationFrame(step);
+                });
+            })();
+        </script>
+</body>
+</html>

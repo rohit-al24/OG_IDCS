@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block root %}
+<style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; }
+
+    /* Profile header */
+    .profile-header {
+        background: linear-gradient(135deg, #1976d2, #125a9c);
+        color: #fff;
+        text-align: center;
+        padding: 40px 20px 80px; /* more bottom padding to give breathing room */
+        position: relative;
+    }
+    .profile-header .profile-img {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 5px solid #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        position: absolute;
+        bottom: -70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+    }
+    .profile-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .profile-header .role {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Profile container (table-like cards) */
+    .profile-container {
+        max-width: 1100px;
+        margin: 120px auto 40px; /* pushed further down */
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    /* Info card (table cell look) */
+    .info-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* center content vertically */
+        min-height: 90px; /* uniform row height */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .info-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    }
+    .info-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 6px;
+    }
+    .info-value {
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: #222;
+        word-break: break-word;
+    }
+
+    /* Address scroll */
+    .address-box { max-height: 120px; overflow-y: auto; }
+
+    /* Change password */
+    .btn-primary {
+        display: inline-block;
+        background: #1976d2;
+        color: #fff !important;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.2s ease;
+        margin-top: 8px;
+    }
+    .btn-primary:hover { background: #125a9c; }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+        .profile-header { padding: 30px 12px 80px; }
+        .profile-header h2 { font-size: 1.6rem; }
+        .profile-container { margin-top: 140px; grid-template-columns: 1fr; }
+    }
+</style>
+
+<!-- Header -->
+<div class="profile-header">
+    {% if duser.profile %}
+        <img src="{{ duser.profile.url }}" class="profile-img" alt="Profile Picture">
+    {% else %}
+        <img src="/static/default_profile.png" class="profile-img" alt="Default Profile">
+    {% endif %}
+    <h2>{{ duser.name }}</h2>
+   
+    <div class="role">
+        {% if duser.position is defined %}
+            Student
+        {% else %}
+            Staff
+        {% endif %}
+        {% if duser.roll %} • Roll No: {{ duser.roll }}{% endif %}
+    </div>
+</div>
+
+
+<!-- Details (table/grid style) -->
+<div class="profile-container">
+    
+    {% if editing and can_edit %}
+        <form method="post" action="" style="display:contents;">
+            {% csrf_token %}
+            <div class="info-card"><div class="info-label">Name</div><div class="info-value"><input type="text" name="name" value="{{ duser.name }}" class="form-control" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+            <div class="info-card"><div class="info-label">Email</div><div class="info-value">{{ duser.user.email }}</div></div>
+    {% else %}
+        <div class="info-card"><div class="info-label">Name</div><div class="info-value">{{ duser.name }}</div></div>
+        <div class="info-card"><div class="info-label">Email</div><div class="info-value">{{ duser.user.email }}</div></div>
+    {% endif %}
+    <div class="info-card"><div class="info-label">Department</div><div class="info-value">{{ duser.get_department_display|default:duser.department }}</div></div>
+    {% if duser.get_year_display %}
+    <div class="info-card"><div class="info-label">Year</div><div class="info-value">{{ duser.get_year_display }}</div></div>
+    {% endif %}
+
+    {% if duser.get_semester_display %}
+    <div class="info-card"><div class="info-label">Semester</div><div class="info-value">{{ duser.get_semester_display }}</div></div>
+    {% endif %}
+    {% if editing and can_edit %}
+        <div class="info-card"><div class="info-label">Date of Birth</div><div class="info-value"><input type="date" name="dob" value="{{ duser.dob }}" class="form-control" style="padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+        <div class="info-card"><div class="info-label">Mobile</div><div class="info-value"><input type="text" name="mobile" value="{{ duser.mobile }}" class="form-control" style="padding:8px;border-radius:6px;border:1px solid #ddd;"/></div></div>
+        <div class="info-card address-box"><div class="info-label">Address</div><div class="info-value"><textarea name="address" class="form-control" style="width:100%;min-height:80px;padding:8px;border-radius:6px;border:1px solid #ddd;">{{ duser.address }}</textarea></div></div>
+    {% else %}
+        <div class="info-card"><div class="info-label">Date of Birth</div><div class="info-value">{{ duser.dob }}</div></div>
+        <div class="info-card"><div class="info-label">Mobile</div><div class="info-value">{{ duser.mobile }}</div></div>
+        <div class="info-card address-box"><div class="info-label">Address</div><div class="info-value">{{ duser.address }}</div></div>
+    {% endif %}
+
+    {% if duser.get_section_display %}
+    <div class="info-card"><div class="info-label">Section</div><div class="info-value">{{ duser.get_section_display }}</div></div>
+    {% endif %}
+
+    {% if not duser.user.is_staff %}
+        <div class="info-card"><div class="info-label">Advisor</div><div class="info-value">{% if duser.advisor %}{{ duser.advisor.name }}{% else %}-{% endif %}</div></div>
+        <div class="info-card"><div class="info-label">A-Advisor</div><div class="info-value">{% if duser.a_advisor %}{{ duser.a_advisor.name }}{% else %}-{% endif %}</div></div>
+        <div class="info-card"><div class="info-label">Mentor</div><div class="info-value">{% if duser.mentor %}{{ duser.mentor.name }}{% else %}-{% endif %}</div></div>
+    {% endif %}
+
+    <div class="info-card"><div class="info-label">HOD</div><div class="info-value">{% if dept_hod and dept_hod.user %}{{ dept_hod.user.name }}{% else %}-{% endif %}</div></div>
+    <div class="info-card"><div class="info-label">AHOD</div><div class="info-value">{% if dept_ahod and dept_ahod.user %}{{ dept_ahod.user.name }}{% else %}-{% endif %}</div></div>
+
+    {% if not duser.user.is_staff %}
+    <div class="info-card"><div class="info-label">Batch</div><div class="info-value">{{ duser.batch_range|default:duser.batch }}</div></div>
+    <div class="info-card"><div class="info-label">Academic Year</div><div class="info-value">{{ duser.academic_year_range|default:duser.academic_year }}</div></div>
+        {% with acadrec=duser.academic_records.last %}
+            <div class="info-card"><div class="info-label">GPA</div><div class="info-value">{% if acadrec and acadrec.gpa %}{{ acadrec.gpa }}{% else %}-{% endif %}</div></div>
+            <div class="info-card"><div class="info-label">CGPA</div><div class="info-value">{% if acadrec and acadrec.cgpa %}{{ acadrec.cgpa }}{% else %}-{% endif %}</div></div>
+        {% endwith %}
+    {% endif %}
+
+    <div class="info-card">
+        {% if editing and can_edit %}
+            <button type="submit" class="btn-primary">Save</button>
+        {% else %}
+            <a href="{% url 'forgot_password' %}" class="btn-primary">Change Password</a>
+        {% endif %}
+        {% if editing and can_edit %}</form>{% endif %}
+        {# Edit button inside profile container on the right side (visible to owner when not editing) #}
+    {% if can_edit and not editing %}
+        
+            <a href="{% url 'student_profile' %}?edit=1" class="btn-primary" style="background:#1976d2;">Edit Profile</a>
+        
+    {% endif %}
+    </div>
+</div>
+{% endblock %}

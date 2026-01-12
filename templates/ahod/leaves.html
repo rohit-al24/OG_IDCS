@@ -1,0 +1,413 @@
+yes{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block root %}
+
+
+<style>
+    th {
+        text-align: center !important;
+    }
+</style>
+
+<!-- Mentees Leaves -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="table-stats order-table ov-h">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            {% extends 'base.html' %}
+                            {% load static %}
+
+
+                            {% block root %}
+
+                            <!-- Year Filter -->
+                            <form method="get" class="form-inline mb-3">
+                                <label for="year" class="mr-2"><b>Filter by Year:</b></label>
+                                <select name="year" id="year" class="form-control mr-2">
+                                    <option value="">All Years</option>
+                                    <option value="1" {% if request.GET.year == '1' %}selected{% endif %}>1st Year</option>
+                                    <option value="2" {% if request.GET.year == '2' %}selected{% endif %}>2nd Year</option>
+                                    <option value="3" {% if request.GET.year == '3' %}selected{% endif %}>3rd Year</option>
+                                    <option value="4" {% if request.GET.year == '4' %}selected{% endif %}>4th Year</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </form>
+
+                            <style>
+                                /* OD canonical styles */
+                                .od-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-top: 16px;
+                                    background: #fff;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                                    border-radius: 8px;
+                                    overflow: hidden;
+                                }
+
+                                .od-table-header {
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                    padding: 14px 16px;
+                                    background: #1976d2;
+                                    color: #fff;
+                                    font-weight: 600;
+                                    font-size: 1.25rem;
+                                    border-top-left-radius: 8px;
+                                    border-top-right-radius: 8px;
+                                }
+
+                                .od-table-header .header-title { margin: 0; }
+                                hr.od-divider { margin: 0; border: 0; border-top: 2px solid #e0e0e0; }
+
+                                .od-header,
+                                .od-row {
+                                    display: grid;
+                                    grid-template-columns: 100px 1fr 120px 120px 140px 160px 220px;
+                                    align-items: center;
+                                    gap: 10px;
+                                    padding: 12px;
+                                    border-bottom: 1px solid #e0e0e0;
+                                }
+
+                                .od-header { background: #f1f1f1; color: #333; font-weight: 600; text-align: center; }
+                                .od-row:nth-child(even) { background: #f9f9f9; }
+                                .od-id { font-weight: 700; color: #1976d2; }
+
+                                .badge { padding: 5px 10px; border-radius: 12px; font-weight: 600; color: #fff; font-size: 0.8rem; }
+                                .badge-Approved { background: #4caf50; }
+                                .badge-Pending { background: #ff9800; }
+                                .badge-Rejected { background: #f44336; }
+                                .badge-secondary { background: #9e9e9e; }
+
+                                .od-actions { display: flex; flex-direction: column; gap: 6px; }
+                                .od-actions input[type="file"] { display: none; }
+                                .file-upload-label,
+                                .btn-upload,
+                                .btn-outline-primary {
+                                    padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem;
+                                }
+                                .file-upload-label { background: #1976d2; color: #fff; }
+                                .file-upload-label:hover { background: #1565c0; }
+                                .btn-upload { background: #4caf50; border: none; color: #fff; }
+                                .btn-upload:hover { background: #388e3c; }
+
+                                @media (max-width: 768px) {
+                                    .od-table { padding: 10px; }
+                                    .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
+                                    .od-header div { display: none; }
+                                    .od-row { border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff; }
+                                    .od-row > div { display: flex; justify-content: space-between; padding: 4px 0; }
+                                    .od-row > div::before { content: attr(data-label); font-weight: 600; color: #555; }
+                                }
+                            </style>
+
+                            <!-- Mentees Leaves -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="od-table">
+                                            <div class="od-table-header"><span class="header-title">Mentees Leaves</span></div>
+                                            <hr class="od-divider">
+                                            <div class="od-header">
+                                                <div>ID</div>
+                                                <div>NAME</div>
+                                                <div>SUB</div>
+                                                <div>FROM - TO</div>
+                                                <div>Submitted At</div>
+                                                <div>STATUS</div>
+                                                <div>ACTION</div>
+                                            </div>
+                                            {% if mods %}
+                                                {% for i in mods %}
+                                                    <div class="od-row">
+                                                        <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
+                                                        <div class="od-title" data-label="NAME">{{ i.user.name }}</div>
+                                                        <div data-label="SUB">{{ i.sub }}</div>
+                                                        <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+                                                        <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
+                                                        <div data-label="STATUS">
+                                                            {% if i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.AHstatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                                                <div class="status-grid"><span class="badge badge-Rejected">REJECTED</span></div>
+                                                            {% elif i.Mstatus == 'Approved' and i.Astatus == 'Approved' and i.AHstatus == 'Approved' %}
+                                                                <div class="status-grid"><span class="badge badge-Approved">APPROVED</span></div>
+                                                            {% else %}
+                                                                <div class="status-grid">
+                                                                    Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                                                    Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                                                    AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
+                                                                    HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="od-actions" data-label="ACTION">
+                                                            <div>
+                                                                <button type="button" class="file-upload-label" data-toggle="modal" data-target="#detail{{i.id}}"><small>VIEW</small></button>
+                                                                {% if i.proof %}<a href="{{i.proof.url}}" class="btn-upload">View File</a>{% endif %}
+                                                            </div>
+                                                            <div>
+                                                                {# Preserve action logic but use OD classes #}
+                                                                {% if duser and i.user.mentor and duser.id == i.user.mentor.id %}
+                                                                    {% if i.Mstatus == 'Pending' %}
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="mentor">
+                                                                            <input type="hidden" name="sts" value="Approved">
+                                                                            <button type="submit" class="btn-upload">Approve</button>
+                                                                        </form>
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="mentor">
+                                                                            <input type="hidden" name="sts" value="Rejected">
+                                                                            <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                        </form>
+                                                                    {% elif i.Mstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by Mentor</span>
+                                                                    {% elif i.Mstatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by Mentor</span>
+                                                                    {% endif %}
+                                                                {% elif duser and i.user.advisor and duser.id == i.user.advisor.id %}
+                                                                    {% if i.Astatus == 'Pending' %}
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="advisor">
+                                                                            <input type="hidden" name="sts" value="Approved">
+                                                                            <button type="submit" class="btn-upload">Approve</button>
+                                                                        </form>
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="advisor">
+                                                                            <input type="hidden" name="sts" value="Rejected">
+                                                                            <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                        </form>
+                                                                    {% elif i.Astatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by Advisor</span>
+                                                                    {% elif i.Astatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by Advisor</span>
+                                                                    {% endif %}
+                                                                {% elif duser and duser.position2 == 1 %}
+                                                                    {% if i.AHstatus == 'Pending' %}
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="ahod">
+                                                                            <input type="hidden" name="sts" value="Approved">
+                                                                            <button type="submit" class="btn-upload">Approve</button>
+                                                                        </form>
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="ahod">
+                                                                            <input type="hidden" name="sts" value="Rejected">
+                                                                            <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                        </form>
+                                                                    {% elif i.AHstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by AHOD</span>
+                                                                    {% elif i.AHstatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by AHOD</span>
+                                                                    {% endif %}
+                                                                {% elif duser and duser.position == 0 %}
+                                                                    {% if i.Hstatus == 'Pending' %}
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="hod">
+                                                                            <input type="hidden" name="sts" value="Approved">
+                                                                            <button type="submit" class="btn-upload">Approve</button>
+                                                                        </form>
+                                                                        <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                            <input type="hidden" name="role" value="hod">
+                                                                            <input type="hidden" name="sts" value="Rejected">
+                                                                            <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                        </form>
+                                                                    {% elif i.Hstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by HOD</span>
+                                                                    {% elif i.Hstatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by HOD</span>
+                                                                    {% endif %}
+                                                                {% else %}
+                                                                    <small>No action available</small>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dept Leaves -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="od-table">
+                                            <div class="od-table-header"><span class="header-title">Department Leaves</span></div>
+                                            <hr class="od-divider">
+                                            <div class="od-header">
+                                                <div>ID</div>
+                                                <div>NAME</div>
+                                                <div>SUB</div>
+                                                <div>FROM - TO</div>
+                                                <div>Submitted At</div>
+                                                <div>STATUS</div>
+                                                <div>ACTION</div>
+                                            </div>
+                                            {% if hods %}
+                                                {% for i in hods %}
+                                                    <div class="od-row">
+                                                        <div class="od-id" data-label="ID">#LE{{ i.id }}</div>
+                                                        <div class="od-title" data-label="NAME">{{ i.user.name }}</div>
+                                                        <div data-label="SUB">{{ i.sub }}</div>
+                                                        <div data-label="FROM-TO">{{ i.start }}<br>{{ i.end }}</div>
+                                                        <div data-label="Submitted At">{{ i.created|date:"d M Y H:i" }}</div>
+                                                        <div data-label="STATUS">
+                                                            <div class="status-grid">
+                                                                Mentor: <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span><br>
+                                                                Advisor: <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span><br>
+                                                                AHOD: <span class="badge badge-{{ i.AHstatus }}">{{ i.AHstatus }}</span><br>
+                                                                HOD: <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="od-actions" data-label="ACTION">
+                                                            <div>
+                                                                <button type="button" class="file-upload-label" data-toggle="modal" data-target="#detail{{i.id}}"><small>VIEW</small></button>
+                                                                {% if i.proof %}<a href="{{i.proof.url}}" class="btn-upload">View File</a>{% endif %}
+                                                            </div>
+                                                            <div>
+                                                                {% if i.Mstatus == 'Rejected' %}
+                                                                    <span class="badge badge-Rejected">Rejected by Mentor</span>
+                                                                {% elif duser and i.user.mentor and duser.id == i.user.mentor.id and i.Mstatus == 'Pending' %}
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="mentor">
+                                                                        <input type="hidden" name="sts" value="Approved">
+                                                                        <button type="submit" class="btn-upload">Approve</button>
+                                                                    </form>
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="mentor">
+                                                                        <input type="hidden" name="sts" value="Rejected">
+                                                                        <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                    </form>
+                                                                {% elif duser and i.user.advisor and duser.id == i.user.advisor.id and i.Astatus == 'Pending' %}
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="advisor">
+                                                                        <input type="hidden" name="sts" value="Approved">
+                                                                        <button type="submit" class="btn-upload">Approve</button>
+                                                                    </form>
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="advisor">
+                                                                        <input type="hidden" name="sts" value="Rejected">
+                                                                        <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                    </form>
+                                                                {% elif duser and duser.position2 == 1 and i.AHstatus == 'Pending' %}
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; min-width:220px;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="ahod">
+                                                                        <div class="form-group mb-1" style="display:inline-block; width:140px;">
+                                                                            <select name="sts" class="form-control form-control-sm ahod-action-select" style="display:inline-block; width:140px;">
+                                                                                <option value="Approved">Approve (as AHOD)</option>
+                                                                                <option value="Rejected">Reject (as AHOD)</option>
+                                                                                <option value="Approved_AHOD_HOD">Approve (AHOD &amp; HOD)</option>
+                                                                                <option value="Rejected_AHOD_HOD">Reject (AHOD &amp; HOD)</option>
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="form-group mb-1" style="display:inline-block; width:180px; vertical-align:top;">
+                                                                            <input type="text" name="ahod_hod_reason" class="form-control form-control-sm ahod-hod-reason" placeholder="Reason (required)" style="display:none; width:170px;" required>
+                                                                        </div>
+                                                                        <button type="submit" class="btn-upload">Submit</button>
+                                                                    </form>
+                                                                    <script>
+                                                                    document.addEventListener('DOMContentLoaded', function() {
+                                                                        var selects = document.querySelectorAll('.ahod-action-select');
+                                                                        selects.forEach(function(sel) {
+                                                                            sel.addEventListener('change', function() {
+                                                                                var form = sel.closest('form');
+                                                                                var reason = form.querySelector('.ahod-hod-reason');
+                                                                                if (sel.value.endsWith('_AHOD_HOD')) {
+                                                                                    reason.style.display = 'inline-block';
+                                                                                    reason.required = true;
+                                                                                } else {
+                                                                                    reason.style.display = 'none';
+                                                                                    reason.required = false;
+                                                                                }
+                                                                            });
+                                                                            sel.dispatchEvent(new Event('change'));
+                                                                        });
+                                                                    });
+                                                                    </script>
+                                                                {% elif duser and duser.position == 0 and i.Hstatus == 'Pending' %}
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="hod">
+                                                                        <input type="hidden" name="sts" value="Approved">
+                                                                        <button type="submit" class="btn-upload">Approve</button>
+                                                                    </form>
+                                                                    <form action="{% url 'ahod_action_leave' i.id %}" method="POST" style="display:inline; margin-left:4px;">{% csrf_token %}
+                                                                        <input type="hidden" name="role" value="hod">
+                                                                        <input type="hidden" name="sts" value="Rejected">
+                                                                        <button type="submit" class="btn-outline-primary">Reject</button>
+                                                                    </form>
+                                                                {% else %}
+                                                                    {% if i.Mstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by Mentor</span>
+                                                                    {% elif i.Astatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by Advisor</span>
+                                                                    {% elif i.Astatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by Advisor</span>
+                                                                    {% elif i.AHstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by AHOD</span>
+                                                                    {% elif i.AHstatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by AHOD</span>
+                                                                    {% elif i.Hstatus == 'Approved' %}
+                                                                        <span class="badge badge-Approved">Approved by HOD</span>
+                                                                    {% elif i.Hstatus == 'Rejected' %}
+                                                                        <span class="badge badge-Rejected">Rejected by HOD</span>
+                                                                    {% else %}
+                                                                        <small>No action available</small>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="detail" tabindex="-1" role="dialog" aria-labelledby="detailLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="detailLabel"></h5>
+                                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                        </div>
+                                        <div class="modal-body" id="modalBodyContent"></div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <script>
+                                $('#detail').on('show.bs.modal', function (event) {
+                                    var button = $(event.relatedTarget)
+                                    var sub = button.data('sub')
+                                    var name = button.data('name')
+                                    var body = button.data('body')
+                                    var url = button.data('url')
+                                    var modal = $(this)
+                                    modal.find('.modal-title').html(`<b>${sub}</b> <small>-by ${name}</small>`)
+                                    var html = `<p><b>Subject:</b> ${sub}</p>`
+                                    html += `<p><b>Student Name:</b> ${name}</p>`
+                                    html += `<p><b>Details:</b> ${body}</p>`
+                                    if (url) {
+                                        html += `<hr><a href="${url}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>`
+                                    }
+                                    modal.find('#modalBodyContent').html(html)
+                                })
+                            </script>
+                            {% endblock %}
+                            </td>

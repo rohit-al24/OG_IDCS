@@ -1,0 +1,12 @@
+
+<ul class="list-group">
+  {% for soc in socials %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-secondary mr-2"><i class="fa fa-share-alt"></i></span>
+      {{ soc.platform }}: <a href="{{ soc.url }}" target="_blank" class="ml-1">{{ soc.url }}</a>
+      <button hx-post="{% url 'resumebuilder:delete_soc' soc.resume.id soc.id %}" hx-target="#soc-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No socials added.</li>
+  {% endfor %}
+</ul>

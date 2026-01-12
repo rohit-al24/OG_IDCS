@@ -1,0 +1,142 @@
+
+<div class="card">
+    <div class="card-header">
+        <h4>Your Gatepass Applications</h4>
+    </div>
+    <div class="card-body">
+        {% if gatepasses %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Mentor Status</th>
+                    <th>Advisor Status</th>
+                    <th>HOD Status</th>
+                    <th>AHOD Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gp in gatepasses %}
+                <tr>
+                    <td>{{ gp.sub }}</td>
+                    <td>{{ gp.start }}</td>
+                    <td>{{ gp.end }}</td>
+                    <td>
+                        {% if gp.Mstatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with Mentor</span>
+                        {% elif gp.Mstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Mstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.Astatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with Advisor</span>
+                        {% elif gp.Astatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Astatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.Hstatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with HOD</span>
+                        {% elif gp.Hstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.Hstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if gp.AHstatus == 'Pending' %}
+                            <span class="badge badge-warning">On Hold with AHOD</span>
+                        {% elif gp.AHstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif gp.AHstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                                        <td>
+                                                {% if gp.AHstatus == 'Approved' %}
+                                                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#gatepassModal{{ gp.id }}">View</button>
+                                                    <!-- Modal for ALLOWED -->
+                                                    <div class="modal fade" id="gatepassModal{{ gp.id }}" tabindex="-1" role="dialog" aria-labelledby="gatepassModalLabel{{ gp.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="gatepassModalLabel{{ gp.id }}">Gatepass Details</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="container-fluid">
+                                                                        <div class="row">
+                                                                            <div class="col-12">
+                                                                                <p><strong>Name:</strong> {{ gp.user.name }}</p>
+                                                                                <p><strong>Department and Year:</strong> {{ gp.user.get_department_display }} - Year {{ gp.user.year }}</p>
+                                                                                <p><strong>Roll Number:</strong> {{ gp.user.roll }}</p>
+                                                                                <p><strong>Gatepass Status:</strong></p>
+                                                                                <div class="d-flex justify-content-center">
+                                                                                    <span class="badge badge-success w-100 text-center" style="font-size:2.2rem;padding:1em 0.5em;max-width:100%;word-break:break-word;white-space:normal;">ALLOWED</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% elif gp.AHstatus == 'Rejected' %}
+                                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#gatepassModal{{ gp.id }}">View</button>
+                                                    <!-- Modal for NOT ALLOWED -->
+                                                    <div class="modal fade" id="gatepassModal{{ gp.id }}" tabindex="-1" role="dialog" aria-labelledby="gatepassModalLabel{{ gp.id }}" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="gatepassModalLabel{{ gp.id }}">Gatepass Details</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="container-fluid">
+                                                                        <div class="row">
+                                                                            <div class="col-12">
+                                                                                <p><strong>Name:</strong> {{ gp.user.name }}</p>
+                                                                                <p><strong>Department and Year:</strong> {{ gp.user.get_department_display }} - Year {{ gp.user.year }}</p>
+                                                                                <p><strong>Roll Number:</strong> {{ gp.user.roll }}</p>
+                                                                                <p><strong>Gatepass Status:</strong></p>
+                                                                                <div class="d-flex justify-content-center">
+                                                                                    <span class="badge badge-danger w-100 text-center" style="font-size:2.2rem;padding:1em 0.5em;max-width:100%;word-break:break-word;white-space:normal;">NOT ALLOWED</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Waiting for Approval</span>
+                                                {% endif %}
+                                        </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No gatepass applications found.</p>
+        {% endif %}
+    </div>
+</div>

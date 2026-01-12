@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block root %}
+<style>
+/* --- Table/Card styles --- */
+.gp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Table Header Section (Title + Icon) */
+.gp-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.gp-table-header .header-title {
+    margin: 0;
+}
+
+.gp-table-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.gp-table-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+hr.gp-divider {
+    margin: 0;
+    border: 0;
+    border-top: 2px solid #e0e0e0;
+}
+
+/* Table rows */
+.gp-header,
+.gp-row {
+    display: grid;
+    /* 8 columns: ID, Subject, Mentor, Advisor, HOD, Exit Time, Entry Time, Action */
+    grid-template-columns: 100px 1fr 100px 100px 100px 120px 120px 120px;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+
+
+.gp-header {
+    background: #f1f1f1;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+}
+
+.gp-row:nth-child(even) { background: #f9f9f9; }
+.gp-id { font-weight: 700; color: #1976d2; }
+
+/* Badges */
+.badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.8rem;
+    text-align: center;
+}
+.badge-Approved { background: #4caf50; }
+.badge-Pending { background: #ff9800; }
+.badge-Rejected { background: #f44336; }
+.badge-secondary { background: #9e9e9e; }
+
+/* Responsive stacking */
+@media (max-width: 768px) {
+    .gp-table {
+        padding: 10px; /* add breathing space inside the table container */
+    }
+    .gp-header, .gp-row {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+    /* Hide the header labels in mobile; each row will show labels via data-label */
+    .gp-header { display: none; }
+    .gp-row {
+        border: 1px solid #e0e0e0;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        padding: 12px;
+        background: #fff;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .gp-row > div {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+    }
+    .gp-row > div::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
+        margin-right: 8px;
+    }
+}
+</style>
+
+<div class="gp-table">
+    <!-- Table Header Section (Title + Icon) -->
+    <div class="gp-table-header">
+        <span class="header-title">Gatepass Status</span>
+        <a href="{% url 'dash' %}" class="home-icon">
+            <i class="fa fa-home"></i>
+        </a>
+
+    </div>
+    <hr class="gp-divider">
+
+    {% if gatepasses %}
+    <!-- Column Headers -->
+    <div class="gp-header">
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>HOD</div>
+        <div>Exit Time</div>
+        <div>Entry Time</div>
+        <div>Action</div>
+    </div>
+
+    <!-- Table Rows -->
+    {% for i in gatepasses %}
+    <div class="gp-row">
+        <div class="gp-id" data-label="ID">#GP{{ i.id }}</div>
+        <div class="gp-title" data-label="Subject">{{ i.sub }}</div>
+        <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+        <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+        <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+        <div>{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</div>
+        <div>{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</div>
+        <div>
+            {% if i.Hstatus == 'Approved' and not i.entry_time %}
+                <a href="{% url 'gatepass_scanner' %}" class="btn btn-primary btn-sm">Scan QR Code</a>
+            {% else %}
+                -
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No Gatepass records found</p>
+    {% endif %}
+</div>
+{% endblock %}

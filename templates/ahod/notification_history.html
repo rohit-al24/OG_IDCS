@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block root %}
+<div class="container mt-4 position-relative">
+    <h3>Notification History</h3>
+    <form method="post" action="{% url 'delete_all_notifications' %}" style="position: absolute; top: 0; right: 0;">
+        {% csrf_token %}
+        <input type="hidden" name="delete_all" value="1">
+        <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
+    </form>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Message</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in all_notifications %}
+            <tr class="{% if not n.is_read %}table-warning{% endif %}">
+                <td>{{ forloop.counter }}</td>
+                <td>{{ n.message }}</td>
+                <td>{{ n.created_at|date:'Y-m-d H:i' }}</td>
+                <td>{% if n.is_read %}<span class="badge badge-success">Read</span>{% else %}<span class="badge badge-danger">Unread</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No notifications found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

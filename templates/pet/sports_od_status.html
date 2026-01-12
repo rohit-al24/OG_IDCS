@@ -1,0 +1,76 @@
+{% extends 'pet/base.html' %}
+{% block pet_content %}
+<div class="card shadow">
+    <div class="card-header">
+        <h4 class="mb-0">Sports OD Application Status</h4>
+    </div>
+    <div class="card-body">
+        {% for od in sports_ods %}
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>{{ od.event_name }}</strong> ({{ od.start_date|date:"d M Y" }} - {{ od.end_date|date:"d M Y" }})
+                <!-- ADD THIS BUTTON -->
+                <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#reasonModal-{{ od.id }}">
+                    View Reason
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>HOD Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in od.players.all %}
+                        <tr>
+                            <td>{{ player.student.roll }}</td>
+                            <td>{{ player.student.name }}</td>
+                            {# --- THIS LINE IS THE FIX --- #}
+                            <td>{{ player.student.department.name }}</td>
+                            <td>
+                                {% if player.status == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif player.status == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ player.hod_remark|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ADD THIS MODAL -->
+        <div class="modal fade" id="reasonModal-{{ od.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel-{{ od.id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reasonModalLabel-{{ od.id }}">Reason for: {{ od.event_name }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        {{ od.body|linebreaksbr|default:"No reason provided." }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>You have not applied for any Sports ODs yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

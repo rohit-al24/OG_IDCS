@@ -1,0 +1,13 @@
+
+<ul class="list-group">
+  {% for pro in projects %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-info mr-2"><i class="fa fa-folder-open"></i></span>
+      {{ pro.name }}
+      {% if pro.link %}<a href="{{ pro.link }}" target="_blank" class="ml-2 text-info">[Link]</a>{% endif %}
+      <button hx-post="{% url 'resumebuilder:delete_pro' pro.resume.id pro.id %}" hx-target="#pro-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No projects added.</li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+    {# This block overrides the default sidebar from base.html #}
+    <li class="{% if request.resolver_match.url_name == 'pet_dashboard' %}active{% endif %}">
+        <a href="{% url 'pet_dashboard' %}"><i class="menu-icon fa fa-laptop"></i>Dashboard </a>
+    </li>
+    <li class="{% if request.resolver_match.url_name == 'pet_sports_od_apply' %}active{% endif %}">
+        <a href="{% url 'pet_sports_od_apply' %}"><i class="menu-icon fa fa-plus-square"></i>Apply Sports OD</a>
+    </li>
+    <li class="{% if request.resolver_match.url_name == 'pet_sports_od_status' %}active{% endif %}">
+        <a href="{% url 'pet_sports_od_status' %}"><i class="menu-icon fa fa-list-alt"></i>View Status</a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    {# This block is where the child template's content (like dash.html) will go #}
+    <div class="container-fluid">
+        {% block pet_content %}
+        {% endblock %}
+    </div>
+{% endblock %}

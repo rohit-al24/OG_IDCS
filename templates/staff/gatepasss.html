@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block mobile_header %}{% endblock %}
+
+{% block root %}
+
+<style>
+    /* Modern OD/Leaves-style grid table CSS for Gatepass */
+    .od-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        overflow: visible;
+        overflow-x: auto;
+        box-sizing: border-box;
+    }
+    .od-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.125rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    .od-header, .od-row {
+        display: grid;
+        grid-template-columns: 6% 16% 14% 11% 11% 13% 9% 9% 11%;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+        line-height: 1.4;
+    }
+    .od-header { 
+        background: #f5f7fa;
+        color: #2c3e50;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .od-header > div { padding: 4px 8px; text-align: left; }
+    .od-row { transition: background-color 0.15s ease; }
+    .od-row:nth-child(even) { background: #f8fafc; }
+    .od-row:hover { background: #f1f5f9; }
+    .od-id { font-weight: 600; color: #1976d2; font-family: monospace; font-size: 0.9rem; }
+    .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+    .od-header > div { white-space: nowrap; }
+    .od-row > div:nth-child(2), .od-header > div:nth-child(2) { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .od-row > div:nth-child(3), .od-header > div:nth-child(3) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:500; font-size:0.75rem; min-width:80px; text-align:center; }
+    .badge-Approved { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+    .badge-Pending { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
+    .badge-Rejected { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+    .od-actions { display:flex; gap:4px; flex-wrap:nowrap; align-items:center; }
+    .od-cell-action { min-width: 0; max-width: 100%; display:flex; align-items:center; justify-content:flex-start; overflow: hidden; padding: 4px !important; }
+    .od-cell-action form { min-width: 0; max-width: 100%; width: 100%; display: flex; }
+    .od-cell-action .od-actions { display:flex; gap:3px; align-items:center; flex-wrap:nowrap; min-width: 0; max-width: 100%; width: 100%; }
+    .od-cell-action .od-actions .form-control { min-width: 0; max-width: 60px; width: 60px; flex: 0 0 60px; font-size: 0.7rem; padding: 0.2rem 0.3rem; height: auto; line-height: 1.2; }
+    .od-cell-action .od-actions .btn { flex: 0 0 auto; white-space: nowrap; font-size: 0.7rem; padding: 0.2rem 0.4rem; height: auto; line-height: 1.2; }
+    .od-cell-action span.text-success,
+    .od-cell-action span.text-danger,
+    .od-cell-action span.text-muted {
+        max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; font-size: 0.8rem;
+    }
+    .od-cell-action > .btn { margin-left: 8px; flex: 0 0 auto; }
+    .od-title { font-weight:500; color:#334155; }
+    .status-grid { display:grid; grid-template-columns:auto 1fr; gap:2px 6px; align-items:center; }
+    .od-row > div[data-label="STATUS"] { min-width: 0; max-width: 100%; overflow: hidden; }
+    .status-grid { min-width: 0; }
+    .status-grid .badge { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; font-size: 0.7rem; padding: 3px 6px; min-width: 70px; }
+    .status-label { color:#4b5563; font-size:0.75rem; font-weight:500; text-align:right; padding-right:4px; }
+    @media (min-width: 769px) {
+        .od-row > div { display:flex; align-items:center; }
+        .od-row > div[data-label="STATUS"] { align-items:center; }
+        .od-row > .od-cell-action { align-items:center; }
+        .od-row > .od-cell-action .btn { display:inline-flex; align-items:center; justify-content:center; }
+    }
+    .modal-dialog {
+        max-width: 600px;
+        margin: 1.75rem auto;
+    }
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .modal-header {
+        background: #1976d2;
+        color: #fff;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+    .modal-header .modal-title {
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+    .modal-header .close {
+        color: #fff;
+        text-shadow: none;
+        opacity: 0.9;
+    }
+    .modal-header .close:hover { opacity: 1; }
+    .modal-body { padding: 1.5rem; }
+    .od-detail-item {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .od-detail-item:last-child { border-bottom: none; }
+    .od-detail-label { font-weight: 600; color: #4b5563; font-size: 0.9375rem; }
+    .od-detail-value { color: #1f2937; font-size: 0.9375rem; }
+    .submitted-time {
+        background: #f0f7ff;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #1976d2;
+    }
+    .submitted-time .od-detail-label { color: #1976d2; }
+    .submitted-time .od-detail-value { color: #1e40af; font-weight: 500; }
+    .time-cell { font-size: 0.8rem; color: #4b5563; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width:768px) {
+        .od-table { padding:8px; }
+        .od-header, .od-row { grid-template-columns: 1fr; text-align:left; }
+        .od-header div { display:none; }
+        .od-row { border:1px solid #e0e0e0; margin-bottom:12px; border-radius:8px; padding:10px; background:#fff; }
+        .od-row > div { display:block; padding:6px 0; }
+        .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+        .od-row > div[data-label="NAME"], .od-row > div[data-label="SUBJECT"], .od-row > div[data-label="STATUS"] { white-space:normal; }
+        .od-row > div[data-label="VIEW"], .od-row > .od-cell-action { display:flex; gap:8px; flex-wrap:wrap; }
+        .status-grid { display:flex; flex-direction:column; gap:6px; }
+    }
+</style>
+
+<!-- Year Filter -->
+<form method="get" class="form-inline mb-3">
+    <label for="year" class="mr-2"><b>Filter by Year:</b></label>
+    <select name="year" id="year" class="form-control mr-2">
+        <option value="">All Years</option>
+        <option value="1" {% if request.GET.year == '1' %}selected{% endif %}>1st Year</option>
+        <option value="2" {% if request.GET.year == '2' %}selected{% endif %}>2nd Year</option>
+        <option value="3" {% if request.GET.year == '3' %}selected{% endif %}>3rd Year</option>
+        <option value="4" {% if request.GET.year == '4' %}selected{% endif %}>4th Year</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="od-table">
+                <div class="od-table-header" style="position:relative;display:flex;justify-content:space-between;align-items:center;">
+                    <span class="header-title">Mentees Gatepass</span>
+                    <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:white;">
+                        <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+                    </a>
+                </div>
+                <div class="od-header">
+                    <div>ID</div>
+                    <div>NAME</div>
+                    <div>SUBJECT</div>
+                    <div>FROM-TO</div>
+                    <div>SUBMITTED</div>
+                    <div>STATUS</div>
+                    <div>EXIT</div>
+                    <div>ENTRY</div>
+                    <div>ACTION</div>
+                </div>
+                {% with filtered_mods=mods|dictsort:"id" %}
+                {% for i in filtered_mods %}
+                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                        <div class="od-row">
+                            <div class="od-id" data-label="ID">#GP{{ i.id }}</div>
+                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+                            <div data-label="SUBJECT" title="{{ i.sub }}">{{ i.sub|truncatewords:2 }}</div>
+                            <div data-label="FROM-TO" style="font-size:0.8rem;">{{i.start|date:"d/m"}} - {{i.end|date:"d/m"}}</div>
+                            <div data-label="SUBMITTED" style="font-size:0.8rem;">{{ i.created|date:"d M, H:i" }}</div>
+                            <div data-label="STATUS">
+                                <div class="status-grid">
+                                    <div class="status-label">Mentor:</div>
+                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                                    <div class="status-label">Advisor:</div>
+                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                                    <div class="status-label">HOD:</div>
+                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                </div>
+                            </div>
+                            <div class="time-cell" data-label="EXIT">{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</div>
+                            <div class="time-cell" data-label="ENTRY">{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</div>
+                            <div class="od-cell-action" data-label="ACTION">
+                                {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="mentor">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="advisor">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="hod">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                        <span class="text-success">Approved</span>
+                                    {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                        <span class="text-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="text-muted">No action</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if filtered_mods|length == 0 %}
+                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="od-table">
+                <div class="od-table-header"><span class="header-title">Class Gatepass</span></div>
+                <div class="od-header">
+                    <div>ID</div>
+                    <div>NAME</div>
+                    <div>SUBJECT</div>
+                    <div>FROM-TO</div>
+                    <div>SUBMITTED</div>
+                    <div>STATUS</div>
+                    <div>EXIT</div>
+                    <div>ENTRY</div>
+                    <div>ACTION</div>
+                </div>
+                {% with filtered_aods=aods|dictsort:"id" %}
+                {% for i in filtered_aods %}
+                    {% if not request.GET.year or i.user.year|stringformat:'s' == request.GET.year %}
+                        <div class="od-row">
+                            <div class="od-id" data-label="ID">#GP{{ i.id }}</div>
+                            <div class="od-title" data-label="NAME" title="{{ i.user.name }}">{{ i.user.name }}</div>
+                            <div data-label="SUBJECT" title="{{ i.sub }}">{{ i.sub|truncatewords:2 }}</div>
+                            <div data-label="FROM-TO" style="font-size:0.8rem;">{{i.start|date:"d/m"}} - {{i.end|date:"d/m"}}</div>
+                            <div data-label="SUBMITTED" style="font-size:0.8rem;">{{ i.created|date:"d M, H:i" }}</div>
+                            <div data-label="STATUS">
+                                <div class="status-grid">
+                                    <div class="status-label">Mentor:</div>
+                                    <span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span>
+                                    <div class="status-label">Advisor:</div>
+                                    <span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span>
+                                    <div class="status-label">HOD:</div>
+                                    <span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span>
+                                </div>
+                            </div>
+                            <div class="time-cell" data-label="EXIT">{{ i.exit_time|date:"d M, H:i"|default:"--/--" }}</div>
+                            <div class="time-cell" data-label="ENTRY">{{ i.entry_time|date:"d M, H:i"|default:"--/--" }}</div>
+                            <div class="od-cell-action" data-label="ACTION">
+                                {% if i.Mstatus == 'Pending' and user.username == i.user.mentor.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="mentor">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% elif i.Astatus == 'Pending' and user.username == i.user.advisor.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="advisor">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% elif i.Hstatus == 'Pending' and user.username == i.user.hod.user.username %}
+                                    <form method="post" action="{% url 'staff_action_gatepass' i.id %}" style="width:100%;">{% csrf_token %}
+                                        <input type="hidden" name="role" value="hod">
+                                        <div class="od-actions">
+                                            <select name="sts" class="form-control" title="Select action">
+                                                <option value="Approved">✓ Yes</option>
+                                                <option value="Rejected">✗ No</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-success btn-sm">Go</button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+                                        {% if i.Mstatus == 'Approved' or i.Astatus == 'Approved' or i.Hstatus == 'Approved' %}
+                                            <span class="text-success">Approved</span>
+                                        {% elif i.Mstatus == 'Rejected' or i.Astatus == 'Rejected' or i.Hstatus == 'Rejected' %}
+                                            <span class="text-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="text-muted">No action</span>
+                                        {% endif %}
+                                        {% if i.body %}
+                                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detail{{i.id}}" style="font-size:0.7rem;padding:0.2rem 0.4rem;">Info</button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if filtered_aods|length == 0 %}
+                    <div class="od-row"><div style="grid-column:1/-1;text-align:center;padding:16px;">No records found</div></div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% comment %} Render per-row modals for class gatepass {% endcomment %}
+{% for i in aods %}
+    {% if i.body %}
+        <div class="modal fade" id="detail{{i.id}}" tabindex="-1" role="dialog" aria-labelledby="detailLabel{{i.id}}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailLabel{{i.id}}">Gatepass Details for {{i.user.name}}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="submitted-time">
+                            <div class="od-detail-item" style="border: none; padding: 0;">
+                                <span class="od-detail-label">
+                                    <i class="fa fa-clock-o"></i> Submitted At:
+                                </span>
+                                <span class="od-detail-value">{{i.created|date:"d M Y, h:i A"}}</span>
+                            </div>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Subject:</span>
+                            <span class="od-detail-value">{{i.sub}}</span>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Period:</span>
+                            <span class="od-detail-value">{{i.start}} - {{i.end}}</span>
+                        </div>
+                        <div class="od-detail-item">
+                            <span class="od-detail-label">Reason:</span>
+                            <span class="od-detail-value">{{i.body}}</span>
+                        </div>
+                        {% if i.proof %}
+                        <div class="od-detail-item" style="border: none;">
+                            <span class="od-detail-label">Proof:</span>
+                            <span class="od-detail-value">
+                                <a href="{{i.proof.url}}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a>
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}

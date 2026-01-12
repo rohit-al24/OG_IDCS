@@ -1,0 +1,12 @@
+
+<ul class="list-group">
+  {% for lang in languages %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-warning mr-2"><i class="fa fa-language"></i></span>
+      {{ lang.name }} <span class="text-muted">({{ lang.proficiency }})</span>
+      <button hx-post="{% url 'resumebuilder:delete_lang' lang.resume.id lang.id %}" hx-target="#lang-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No languages added.</li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block root %}
+<style>
+/* Card header style like OD/Leave */
+.card-header {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* title left, icon right */
+    padding: 14px 20px;
+}
+
+.card-header .header-title {
+    margin: 0;
+}
+
+.card-header .home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.card-header .home-icon:hover i {
+    transform: scale(1.2);
+}
+
+/* Card body and general styles */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+    border: none;
+}
+
+.animated {
+    animation: fadeIn 0.5s ease-in-out;
+}
+</style>
+
+<div class="animated fadeIn" style="margin-top: 16px;">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <!-- Card header with title and home icon -->
+                <div class="card-header" style="border-radius: 8px 8px 0px 0px;"> 
+                    <span class="header-title">Gatepass Application</span>
+                    <a href="{% url 'dash' %}" class="home-icon">
+                        <i class="fa fa-home"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div id="gatepass-content">
+                        {% if action == 'apply' or not action %}
+                            {% include 'student/gatepass_apply.html' %}
+                        {% elif action == 'status' %}
+                            {% include 'student/gatepass_status.html' %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

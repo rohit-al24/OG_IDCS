@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+
+
+{% block root %}
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <b>Department Students Gatepass Applications (HOD)</b>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Subject</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>SUBMITTED AT</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for g in gatepass_forms %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ g.user.name }}</td>
+                    <td>{{ g.sub }}</td>
+                    <td>{{ g.start|date:'Y-m-d H:i' }}</td>
+                    <td>{{ g.end|date:'Y-m-d H:i' }}</td>
+                    <td>{{ g.created|date:'Y-m-d H:i' }}</td>
+                    <td>
+                        Mentor: <span class="badge badge-{{ g.Mstatus }}">{{ g.Mstatus }}</span><br>
+                        Advisor: <span class="badge badge-{{ g.Astatus }}">{{ g.Astatus }}</span><br>
+                        HOD: 
+                        {% if g.Hstatus == 'Approved by AHOD' %}
+                            <span class="badge badge-success">Approved by AHOD</span>
+                            {% if g.ahod_reason %}<div class="text-muted small">Reason: {{ g.ahod_reason }}</div>{% endif %}
+                        {% elif g.Hstatus == 'Rejected by AHOD' %}
+                            <span class="badge badge-danger">Rejected by AHOD</span>
+                            {% if g.ahod_reason %}<div class="text-muted small">Reason: {{ g.ahod_reason }}</div>{% endif %}
+                        {% elif g.Hstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif g.Hstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if g.Hstatus == 'Pending' %}
+                            <form method="post" action="{% url 'ahod_gatepass_hod' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="gatepass_id" value="{{ g.id }}">
+                                <div class="form-group mb-0">
+                                    <textarea name="reason" class="form-control" placeholder="Reason for AHOD action (required)" required>{{ g.ahod_reason }}</textarea>
+                                </div>
+                        {% elif g.Hstatus == 'Approved by AHOD' %}
+                            <span class="badge badge-success">Approved by AHOD</span>
+                            {% if g.ahod_reason %}<div class="text-muted small">{{ g.ahod_reason }}</div>{% endif %}
+                        {% elif g.Hstatus == 'Rejected by AHOD' %}
+                            <span class="badge badge-danger">Rejected by AHOD</span>
+                            {% if g.ahod_reason %}<div class="text-muted small">{{ g.ahod_reason }}</div>{% endif %}
+                        {% elif g.Hstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif g.Hstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% else %}
+                            {{ g.ahod_reason|default:'-' }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if g.Hstatus == 'Pending' %}
+                                <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                                <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        {% elif g.Hstatus == 'Approved' %}
+                            <span class="badge badge-success">Approved</span>
+                        {% elif g.Hstatus == 'Rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="9">No gatepass forms.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Mentees Gatepass Applications Table -->
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <b>Mentees Gatepass Applications (AHOD)</b>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>SUBMITTED AT</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for g in mentee_gatepass_forms %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ g.user.name }}</td>
+                            <td>{{ g.sub }}</td>
+                            <td>{{ g.start|date:'Y-m-d H:i' }}</td>
+                            <td>{{ g.end|date:'Y-m-d H:i' }}</td>
+                            <td>{{ g.created|date:'Y-m-d H:i' }}</td>
+                            <td>
+                                Mentor: <span class="badge badge-{{ g.Mstatus }}">{{ g.Mstatus }}</span><br>
+                                Advisor: <span class="badge badge-{{ g.Astatus }}">{{ g.Astatus }}</span><br>
+                                HOD: 
+                                {% if g.Hstatus == 'Approved by AHOD' %}
+                                    <span class="badge badge-success">Approved by AHOD</span>
+                                    {% if g.ahod_reason %}<div class="text-muted small">Reason: {{ g.ahod_reason }}</div>{% endif %}
+                                {% elif g.Hstatus == 'Rejected by AHOD' %}
+                                    <span class="badge badge-danger">Rejected by AHOD</span>
+                                    {% if g.ahod_reason %}<div class="text-muted small">Reason: {{ g.ahod_reason }}</div>{% endif %}
+                                {% elif g.Hstatus == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif g.Hstatus == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if g.Mstatus == 'Pending' %}
+                                    <form method="post" action="{% url 'ahod_gatepass_hod' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="gatepass_id" value="{{ g.id }}">
+                                        <input type="hidden" name="role" value="mentor">
+                                        <div class="form-group mb-0">
+                                            <textarea name="reason" class="form-control" placeholder="Reason for Mentor action (required)" required>{{ g.ahod_reason }}</textarea>
+                                        </div>
+                                        <button name="sts" value="Approved" class="btn btn-success btn-sm mt-2">Approve</button>
+                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm mt-2">Reject</button>
+                                    </form>
+                                {% elif g.Mstatus == 'Approved by AHOD' %}
+                                    <span class="badge badge-success">Approved by AHOD</span>
+                                    {% if g.ahod_reason %}<div class="text-muted small">{{ g.ahod_reason }}</div>{% endif %}
+                                {% elif g.Mstatus == 'Rejected by AHOD' %}
+                                    <span class="badge badge-danger">Rejected by AHOD</span>
+                                    {% if g.ahod_reason %}<div class="text-muted small">{{ g.ahod_reason }}</div>{% endif %}
+                                {% elif g.Mstatus == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif g.Mstatus == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    {{ g.ahod_reason|default:'-' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if g.Mstatus == 'Pending' %}
+                                        <button name="sts" value="Approved" class="btn btn-success btn-sm">Approve</button>
+                                        <button name="sts" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                {% elif g.Mstatus == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif g.Mstatus == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="9">No mentee gatepass forms.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

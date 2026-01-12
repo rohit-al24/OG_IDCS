@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block root %}
+<div class="container mt-4">
+    <h2 class="mb-4">Mentees of {{ staff.name }}</h2>
+    <a href="javascript:history.back()" class="btn btn-secondary mb-3">Back</a>
+    {% if mentees %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Roll</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in mentees %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.roll }}</td>
+                    <td>{{ student.user.email }}</td>
+                    <td>{{ student.mobile }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">No mentees found for this staff.</div>
+    {% endif %}
+</div>
+{% endblock %}

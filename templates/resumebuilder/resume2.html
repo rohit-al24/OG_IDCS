@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700|Lato:400,700&display=swap" rel="stylesheet">
+<div class="resume-preview resume-preview-font bg-white p-4" style="max-width:900px;margin:auto;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+  <div class="d-flex align-items-center mb-4">
+<img src="{{ resume.profile_pic_url }}" alt="Profile Picture" class="rounded-circle mr-4" style="width:100px;height:100px;object-fit:cover;">
+<img src="{{ resume.profile_pic_url }}" alt="Profile Picture" class="rounded-circle mr-4" style="width:100px;height:100px;object-fit:cover;">
+    <div>
+      <h1 class="font-weight-bold mb-1" style="color:#6610f2;text-transform:uppercase;">{{ resume.role }}</h1>
+      <p class="mb-0 text-muted">{{ resume.bio }}</p>
+    </div>
+  </div>
+  <div class="timeline position-relative" style="padding-left:40px;">
+    <div class="timeline-line position-absolute" style="left:18px;top:0;bottom:0;width:4px;background:#6610f2;border-radius:2px;"></div>
+    {% for edu in resume.get_education %}
+      <div class="timeline-item mb-5 position-relative">
+        <div class="timeline-dot bg-success position-absolute" style="left:-2px;top:8px;width:16px;height:16px;border-radius:50%;border:3px solid #fff;"></div>
+        <div class="pl-4">
+          <h4 class="section-title mb-1" style="color:#28a745;font-weight:700;">{{ edu.degree }}</h4>
+          <div class="text-muted">{{ edu.institution }} ({{ edu.start_year }}-{{ edu.end_year }})</div>
+        </div>
+      </div>
+    {% endfor %}
+    {% for pro in resume.get_projects %}
+      <div class="timeline-item mb-5 position-relative">
+        <div class="timeline-dot bg-info position-absolute" style="left:-2px;top:8px;width:16px;height:16px;border-radius:50%;border:3px solid #fff;"></div>
+        <div class="pl-4">
+          <h4 class="section-title mb-1" style="color:#17a2b8;font-weight:700;">{{ pro.name }}</h4>
+          {% if pro.link %}<a href="{{ pro.link }}" target="_blank" class="text-info">[Link]</a>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    {% for ach in resume.get_achievements %}
+      <div class="timeline-item mb-5 position-relative">
+        <div class="timeline-dot bg-warning position-absolute" style="left:-2px;top:8px;width:16px;height:16px;border-radius:50%;border:3px solid #fff;"></div>
+        <div class="pl-4">
+          <h4 class="section-title mb-1" style="color:#ffc107;font-weight:700;">{{ ach.title }}</h4>
+          <div class="text-muted">{{ ach.date }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <h4 class="section-title" style="color:#007bff;border-bottom:2px solid #007bff;display:inline-block;">Skills</h4>
+      <ul class="list-unstyled mb-4">
+        {% for skill in resume.get_skills %}
+          <li class="mb-1"><i class="fa fa-check text-success mr-1"></i> {{ skill.name }} <span class="text-muted">({{ skill.level }})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h4 class="section-title" style="color:#fd7e14;border-bottom:2px solid #fd7e14;display:inline-block;">Languages</h4>
+      <ul class="list-unstyled mb-4">
+        {% for lang in resume.get_languages %}
+          <li class="mb-1"><i class="fa fa-language text-warning mr-1"></i> {{ lang.name }} <span class="text-muted">({{ lang.proficiency }})</span></li>
+        {% endfor %}
+      </ul>
+      <h4 class="section-title" style="color:#6610f2;border-bottom:2px solid #6610f2;display:inline-block;">Socials</h4>
+      <ul class="list-unstyled mb-4">
+        {% for soc in resume.get_socials %}
+          <li class="mb-1"><i class="fa fa-share-alt text-secondary mr-1"></i> {{ soc.platform }}: <a href="{{ soc.url }}" target="_blank">{{ soc.url }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

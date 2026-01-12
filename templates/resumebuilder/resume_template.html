@@ -1,0 +1,252 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+body, html {
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.resume-preview-custom {
+  max-width: 800px;
+  margin: 0;
+  background: #fff;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0 0 0 20px;
+  font-family: 'Lato', 'Roboto', Arial, sans-serif;
+  text-align: left;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-resume-area, #printable-resume-area * {
+    visibility: visible;
+  }
+  #printable-resume-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  body > header, body > nav, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .footer, .page-header, .page-title, .main-header, .main-footer,
+  .resume-footer, .copyright, .print-hide, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
+  #header, #main-header, #main-footer, #footer, #logo, #idcs-logo, #idcs-header, #idcs-footer, .header, .footer, .top-bar, .bottom-bar, .site-header, .site-footer, .nav, .nav-bar, .navbar-fixed-top,
+  .navbar-fixed-bottom, .page-link, .page-links, .pagination, .copyright, .resume-footer, .print-header, .print-footer, .print-page-link, .print-copyright, .fa, .fa-bell, .fa-user, .fa-bars, .fa-home, .fa-sign-out, .fa-cog, .fa-envelope, .fa-calendar, .fa-clock, .fa-linkedin, .fa-github, .fa-instagram, .fa-facebook, .fa-x,
+  .page-header, .page-footer, .footer, .copyright, .print-footer, .print-header, .print-page-link, .print-copyright, .site-header, .site-footer, .navbar, .navbar-header, .navbar-brand, .navbar-nav, .sidebar, .sidebar-menu, .sidebar-footer, .main-header, .main-footer, .top-bar, .bottom-bar {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+  }
+  .resume-print-btn, .resume-back-link {
+    display: none !important;
+  }
+  .resume-preview-custom {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: left !important;
+  }
+  html, body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  @page {
+    margin: 20mm 10mm 20mm 10mm;
+    size: auto;
+    @top-left { content: ""; }
+    @top-center { content: ""; }
+    @top-right { content: ""; }
+    @bottom-left { content: ""; }
+    @bottom-center { content: ""; }
+    @bottom-right { content: ""; }
+  }
+}
+.resume-section-title {
+  color: #27a3e2;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+.resume-detail-label {
+  font-weight: 600;
+  color: #222;
+}
+.resume-detail-value {
+  color: #222;
+}
+.resume-skill-badge, .resume-lang-badge {
+  display: inline-block;
+  background: #f7fbff;
+  border: 1px solid #27a3e2;
+  color: #27a3e2;
+  border-radius: 8px;
+  padding: 4px 14px;
+  margin: 0 8px 8px 0;
+  font-size: 1rem;
+}
+.resume-project-link {
+  color: #27a3e2;
+  font-size: 0.95rem;
+  text-decoration: underline;
+}
+.resume-print-btn {
+  background: #27a3e2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.resume-back-link {
+  color: #27a3e2;
+  font-size: 1rem;
+  text-decoration: underline;
+  margin-left: 12px;
+}
+.resume-meta {
+  font-size: 1rem;
+  color: #222;
+  margin-bottom: 18px;
+}
+.resume-meta strong {
+  color: #222;
+}
+.resume-meta a {
+  color: #27a3e2;
+  font-weight: 600;
+}
+.resume-section {
+  margin-bottom: 18px;
+}
+.resume-ach-date {
+  float: right;
+  color: #222;
+  font-weight: 600;
+}
+.resume-footer {
+  font-size: 0.95rem;
+  color: #888;
+  text-align: right;
+  margin-top: 32px;
+}
+</style>
+<div id="printable-resume-area">
+  <div class="resume-preview-custom">
+  <div class="resume-meta">
+    <span>Email: <strong>{{ resume.email|default:'-' }}</strong></span>
+    <span style="margin:0 8px;">|</span>
+    <span>Phone: <strong>{{ resume.phone|default:'-' }}</strong></span>
+    <span style="float:right;"><a href="#" class="resume-meta-link">in</a></span>
+  </div>
+  <div class="row mb-3 align-items-center">
+    <div class="col-auto pr-0" style="display:flex;align-items:center;">
+      <img src="{{ resume.profile_pic_url }}" alt="Profile Picture" class="rounded-circle mb-3" style="width:100px;height:100px;object-fit:cover;">
+    </div>
+    <div class="col text-center">
+      <div style="font-weight:700;font-size:2rem;">{{ resume.name|default:'-' }}</div>
+    </div>
+  </div>
+  <div style="margin-bottom:18px;color:#222;">
+    <div style="font-weight:700;font-size:1.3rem;">{{ resume.role }}</div>
+    <div style="color:#555;">{{ resume.bio }}</div>
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">SKILLS</div>
+    {% for skill in skills %}
+      <span class="resume-skill-badge">{{ skill.name }}</span>
+    {% empty %}
+      <span class="text-muted">No skills added</span>
+    {% endfor %}
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">ACHIEVEMENTS</div>
+    {% for ach in achievements %}
+      <div style="font-weight:600;">{{ ach.title }}<span class="resume-ach-date">{{ ach.date }}</span></div>
+      <div>{{ ach.description }}</div>
+    {% empty %}
+      <span class="text-muted">No achievements added</span>
+    {% endfor %}
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">EDUCATION</div>
+    {% for edu in education %}
+      <div style="font-weight:600;">{{ edu.degree }}</div>
+      <div>{{ edu.institution }}</div>
+      <div>{{ edu.field }}</div>
+      <div><strong>Years:</strong> {{ edu.start_year }} - {{ edu.end_year }}</div>
+    {% empty %}
+      <span class="text-muted">No education added</span>
+    {% endfor %}
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">PROJECTS</div>
+    {% for pro in projects %}
+      <div style="font-weight:600;">{{ pro.name }}</div>
+      <div>{{ pro.description }}</div>
+      {% if pro.link %}<div><a href="{{ pro.link }}" class="resume-project-link" target="_blank">link</a></div>{% endif %}
+    {% empty %}
+      <span class="text-muted">No projects added</span>
+    {% endfor %}
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">LANGUAGES</div>
+    {% for lang in languages %}
+      <span class="resume-lang-badge">{{ lang.name }} - {{ lang.proficiency }}</span>
+    {% empty %}
+      <span class="text-muted">No languages added</span>
+    {% endfor %}
+  </div>
+  <div class="resume-section">
+    <div class="resume-section-title">SOCIALS</div>
+    {% for soc in socials %}
+      <div><span style="font-weight:600;">{{ soc.platform }}</span>: <a href="{{ soc.url }}" class="resume-project-link" target="_blank">{{ soc.url }}</a></div>
+    {% empty %}
+      <span class="text-muted">No socials added</span>
+    {% endfor %}
+  </div>
+  {% if resume.declaration_text or resume.declaration_signature or resume.declaration_date or resume.declaration_place %}
+  <div class="resume-section">
+    <div class="resume-section-title">DECLARATION</div>
+    {% if resume.declaration_text %}
+      <div style="white-space:pre-line;">{{ resume.declaration_text }}</div>
+    {% endif %}
+    {% if resume.declaration_signature %}
+      <div style="margin-top:16px;">
+        <img src="{{ resume.declaration_signature.url }}" alt="Signature" style="max-width:160px;max-height:80px;object-fit:contain;display:block;">
+        <div style="font-size:0.95rem;color:#888;">Signature</div>
+      </div>
+    {% endif %}
+    {% if resume.declaration_date or resume.declaration_place %}
+      <div style="margin-top:16px;">
+        {% if resume.declaration_date %}<strong>Date:</strong> {{ resume.declaration_date }}<br>{% endif %}
+        {% if resume.declaration_place %}<strong>Place:</strong> {{ resume.declaration_place }}{% endif %}
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div style="text-align:center;">
+  <button class="resume-print-btn no-print" onclick="window.print()">Print <i class="fa fa-print"></i></button>
+  <a href="javascript:history.back()" class="resume-back-link no-print">&larr; Back</a>
+  </div>
+  </div>
+</div>
+{% endblock %}

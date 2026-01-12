@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+
+
+{% block root %}
+    <style>
+        /* Reuse OD/Leave responsive table styles for consistency */
+        .od-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: visible;
+            overflow-x: auto;
+            box-sizing: border-box;
+        }
+        .od-table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #1976d2;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .od-header, .od-row {
+            display: grid;
+            /* remove Submitted At column; show timestamp in modal instead */
+            grid-template-columns: 8% 28% 20% 18% 16% 10%;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e0e0e0;
+            line-height: 1.4;
+        }
+        .od-header { 
+            background: #f5f7fa;
+            color: #2c3e50;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .od-header > div { padding: 4px 8px; text-align: left; }
+        .od-row { transition: background-color 0.15s ease; }
+        .od-row:nth-child(even) { background: #f8fafc; }
+        .od-row:hover { background: #f1f5f9; }
+        .od-id { font-weight: 600; color: #1976d2; font-family: monospace; font-size: 0.9rem; }
+        .od-row > div[data-label="FROM-TO"] { font-size: 0.9rem; white-space: normal; line-height: 1.6; text-align: center; display:flex; flex-direction:column; align-items:center; }
+        .od-row > div, .od-header > div { padding: 6px 8px; box-sizing: border-box; min-width: 0; }
+        .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-weight:500; font-size:0.75rem; min-width:80px; }
+        .badge-Approved { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+        .badge-Pending { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
+        .badge-Rejected { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+        .od-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .od-title { font-weight:500; color:#334155; }
+        .status-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 8px; align-items:center; }
+        .status-label { color:#4b5563; font-size:0.85rem; font-weight:500; text-align:right; padding-right:4px; }
+        @media (max-width:768px) {
+            .od-header, .od-row { grid-template-columns: 1fr; text-align:left; }
+            .od-header div { display:none; }
+            .od-row { border:1px solid #e0e0e0; margin-bottom:12px; border-radius:8px; padding:10px; background:#fff; }
+            .od-row > div { display:block; padding:6px 0; }
+            .od-row > div::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+            .status-grid { display:flex; flex-direction:column; gap:6px; }
+        }
+    </style>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="od-table">
+                    <div class="od-table-header"><span class="header-title">Department Students Bonafide Applications (HOD)</span></div>
+                    <hr class="od-divider">
+                    <div class="od-header">
+                        <div>ID</div>
+                        <div>Student</div>
+                        <div>Subject</div>
+                        <div>Status</div>
+                        <div>Action</div>
+                    </div>
+                    {% for b in bonafide_forms %}
+                        <div class="od-row">
+                            <div class="od-id" data-label="ID">#BF{{ b.id }}</div>
+                            <div class="od-title" data-label="Student">{{ b.user.name }}</div>
+                            <div data-label="Subject">{{ b.sub }}</div>
+                            {# Submitted At moved to modal card only #}
+                            <div data-label="Status">
+                                <div class="status-grid">
+                                    <div class="status-label">Mentor:</div>
+                                    <span class="badge badge-{{ b.Mstatus }}">{{ b.Mstatus }}</span>
+                                    <div class="status-label">Advisor:</div>
+                                    <span class="badge badge-{{ b.Astatus }}">{{ b.Astatus }}</span>
+                                    <div class="status-label">HOD:</div>
+                                    {% if b.Hstatus == 'Approved by AHOD' %}
+                                        <span class="badge badge-Approved">Approved by AHOD</span>
+                                    {% elif b.Hstatus == 'Rejected by AHOD' %}
+                                        <span class="badge badge-Rejected">Rejected by AHOD</span>
+                                    {% elif b.Hstatus == 'Approved' %}
+                                        <span class="badge badge-Approved">Approved</span>
+                                    {% elif b.Hstatus == 'Rejected' %}
+                                        <span class="badge badge-Rejected">Rejected</span>
+                                    {% else %}
+                                        <span class="badge badge-Pending">Pending</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="od-actions" data-label="Action">
+                                <div data-label="VIEW">
+                                    {% if b.body %}
+                                        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#reasonModal{{ b.id }}">View Details</button>
+                                    {% endif %}
+                                    {% if b.proof %}
+                                        <a href="{{ b.proof.url }}" class="btn btn-outline-success btn-sm">View File</a>
+                                    {% endif %}
+                                </div>
+                                <div data-label="ACTION">
+                                    {% if b.Hstatus == 'Pending' %}
+                                        <form method="post" action="{% url 'ahod_bonafide_hod' %}">{% csrf_token %}
+                                            <input type="hidden" name="bonafide_id" value="{{ b.id }}">
+                                            <div class="form-group mb-1"><textarea name="reason" class="form-control" placeholder="Reason for AHOD action (required)" required>{{ b.ahod_reason }}</textarea></div>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                                    <div class="dropdown-menu">
+                                                        <button class="dropdown-item set-sts" type="button" data-value="approve">Approve</button>
+                                                        <button class="dropdown-item set-sts" type="button" data-value="reject">Reject</button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" name="action" value="" class="action-input">
+                                                <button type="submit" class="btn btn-primary btn-sm" disabled>Submit</button>
+                                            </div>
+                                        </form>
+                                    {% elif b.Hstatus == 'Approved by AHOD' %}
+                                        <span class="badge badge-Approved">Approved</span>
+                                    {% elif b.Hstatus == 'Rejected by AHOD' %}
+                                        <span class="badge badge-Rejected">Rejected</span>
+                                    {% elif b.Hstatus == 'Approved' %}
+                                        <span class="badge badge-Approved">Approved</span>
+                                    {% elif b.Hstatus == 'Rejected' %}
+                                        <span class="badge badge-Rejected">Rejected</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% if b.body %}
+                            <div class="modal fade" id="reasonModal{{ b.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel{{ b.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header"><h5 class="modal-title">Details for Bonafide #{{ b.id }}</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+                                        <div class="modal-body">
+                                            <div class="app-details" style="font-size:0.95rem;">
+                                                {% if b.fathers_name %}<div class="app-row"><strong>Fathers Name:</strong> <span>{{ b.fathers_name }}</span></div>{% endif %}
+                                                {% if b.branch %}<div class="app-row"><strong>Branch:</strong> <span>{{ b.branch }}</span></div>{% endif %}
+                                                {% if b.year %}<div class="app-row"><strong>Year:</strong> <span>{{ b.year }}</span></div>{% endif %}
+                                                {% if b.community %}<div class="app-row"><strong>Community:</strong> <span>{{ b.community }}</span></div>{% endif %}
+                                                {% if b.scholar_type %}<div class="app-row"><strong>Scholar Type:</strong> <span>{{ b.scholar_type }}</span></div>{% endif %}
+                                                {% if b.college_bus %}<div class="app-row"><strong>College Bus:</strong> <span>{{ b.college_bus }}</span></div>{% endif %}
+                                                {% if b.boarding_point %}<div class="app-row"><strong>Boarding Point:</strong> <span>{{ b.boarding_point }}</span></div>{% endif %}
+                                                {% if b.bus_type %}<div class="app-row"><strong>Bus Type:</strong> <span>{{ b.bus_type }}</span></div>{% endif %}
+                                                {% if b.bus_fare %}<div class="app-row"><strong>Bus Fare:</strong> <span>{{ b.bus_fare }}</span></div>{% endif %}
+                                                {% if b.first_graduate %}<div class="app-row"><strong>First Graduate:</strong> <span>{{ b.first_graduate }}</span></div>{% endif %}
+                                                {% if b.gov_mgmt %}<div class="app-row"><strong>Gov/Management:</strong> <span>{{ b.gov_mgmt }}</span></div>{% endif %}
+                                                {% if b.date %}<div class="app-row"><strong>Date:</strong> <span>{{ b.date }}</span></div>{% endif %}
+                                                {% if b.created %}<div class="app-row"><strong>Submitted At:</strong> <span>{{ b.created|date:'Y-m-d H:i' }}</span></div>{% endif %}
+                                                {% if b.sub %}<div class="app-row"><strong>Purpose (Subject):</strong> <span>{{ b.sub }}</span></div>{% endif %}
+                                                {% if b.body %}
+                                                    <div class="app-row"><strong>Application Body:</strong>
+                                                        <div class="application-body" data-body="{{ b.body|escapejs }}">{{ b.body|linebreaksbr }}</div>
+                                                    </div>
+                                                {% endif %}
+                                                {% if b.ahod_reason %}<div class="app-row"><strong>AHOD Reason:</strong> <span>{{ b.ahod_reason }}</span></div>{% endif %}
+                                                {% if b.Hstatus %}<div class="app-row"><strong>Status:</strong> <span>{{ b.Hstatus }}</span></div>{% endif %}
+                                                {% if b.proof %}<div class="app-row"><strong>Uploaded File:</strong> <a href="{{ b.proof.url }}" target="_blank" class="btn btn-primary btn-sm">View Uploaded File</a></div>{% endif %}
+                                            </div>
+                                            <script>
+                                            (function(){
+                                                try{
+                                                    var el = document.querySelector && document.querySelector('#reasonModal{{ b.id }} .application-body');
+                                                    if(!el) return;
+                                                    var raw = el.getAttribute('data-body') || '';
+                                                    if(raw.indexOf('|') !== -1 && raw.indexOf(':') !== -1){
+                                                        var parts = raw.split('|').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                                        if(parts.length){
+                                                            var container = document.createElement('div');
+                                                            container.className = 'app-details';
+                                                            parts.forEach(function(p){
+                                                                var kv = p.split(':');
+                                                                if(kv.length>=2){
+                                                                        var label = kv.shift().trim();
+                                                                        label = label.replace(/'/g,'');
+                                                                        var value = kv.join(':').trim();
+                                                                        var lkey = label.toLowerCase();
+                                                                        if(lkey.indexOf('branch') !== -1){
+                                                                            value = value.replace(/\s*&\s*/g,'&');
+                                                                        }
+                                                                        if(value && value[0] && value[0] === value[0].toLowerCase()){
+                                                                            value = value.charAt(0).toUpperCase() + value.slice(1);
+                                                                        }
+                                                                        var row = document.createElement('div');
+                                                                        row.className = 'app-row';
+                                                                        var strong = document.createElement('strong');
+                                                                        strong.textContent = label + ': ';
+                                                                        var span = document.createElement('span');
+                                                                        span.textContent = value;
+                                                                        row.appendChild(strong);
+                                                                        row.appendChild(span);
+                                                                        container.appendChild(row);
+                                                                    } else {
+                                                                        var row = document.createElement('div');
+                                                                        row.className = 'app-row';
+                                                                        row.textContent = p;
+                                                                        container.appendChild(row);
+                                                                    }
+                                                            });
+                                                            el.innerHTML = '';
+                                                            el.appendChild(container);
+                                                        }
+                                                    }
+                                                }catch(e){ }
+                                            })();
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<script>
+// Shared submit-guard for forms that use .action-input (HOD/AHOD)
+document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('form').forEach(function(form){
+        if(form.querySelector && form.querySelector('.action-input')){
+            var submit = form.querySelector('button[type="submit"]');
+            if(submit) submit.disabled = true;
+        }
+    });
+
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest && e.target.closest('.set-sts');
+        if(!btn) return;
+        var form = btn.closest('form');
+        if(!form) return;
+        var input = form.querySelector('.action-input');
+        if(input) input.value = btn.getAttribute('data-value') || '';
+        var submit = form.querySelector('button[type="submit"]');
+        if(submit) submit.disabled = false;
+        var group = btn.closest('.btn-group');
+        if(group){
+            var toggle = group.querySelector('.dropdown-toggle');
+            if(toggle) toggle.textContent = btn.textContent.trim();
+        }
+    });
+
+    document.addEventListener('submit', function(e){
+        var form = e.target;
+        if(!(form && form.querySelector)) return;
+        var input = form.querySelector('.action-input');
+        if(!input) return;
+        if(!input.value || input.value.trim() === ''){
+            e.preventDefault();
+            var orig = form.querySelector('.btn-group .dropdown-toggle');
+            if(orig){ orig.classList.add('btn-warning'); setTimeout(function(){ orig.classList.remove('btn-warning'); }, 1500); }
+            alert('Please select an action before submitting.');
+            return false;
+        }
+    }, true);
+});
+</script>

@@ -1,0 +1,92 @@
+{% extends 'hod/hod_base.html' %}
+{% block content %}
+<div class="card shadow">
+    <div class="card-header">
+        <h4 class="mb-0">Sports OD Approval Requests</h4>
+    </div>
+    <div class="card-body">
+        {% if players_by_event %}
+            {% for event, players in players_by_event.items %}
+                <div class="card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Event: {{ event.event_name }}</strong> ({{ event.start_date|date:"d M Y" }} - {{ event.end_date|date:"d M Y" }})
+                            <br>
+                            <small>Applied by: {{ event.created_by.name }}</small>
+                        </div>
+                        <!-- ADD THIS BUTTON -->
+                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#reasonModal-{{ event.id }}">
+                            View Reason
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Roll Number</th>
+                                    <th>Name</th>
+                                    <th>Year</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for player in players %}
+                                <tr>
+                                    <td>{{ player.student.roll }}</td>
+                                    <td>{{ player.student.name }}</td>
+                                    <td>{{ player.student.year }}</td>
+                                    <td>
+                                        {% if player.status == 'Approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif player.status == 'Rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
+                                        {% else %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if player.status == 'Pending' %}
+                                        <form method="POST" action="{% url 'hod_sports_od_action' player.id %}" class="form-inline">
+                                            {% csrf_token %}
+                                            <input type="text" name="hod_remark" class="form-control form-control-sm mr-2" placeholder="Reason (optional)">
+                                            <button type="submit" name="action" value="Approved" class="btn btn-success btn-sm mr-1">Approve</button>
+                                            <button type="submit" name="action" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+                                        </form>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADD THIS MODAL -->
+                <div class="modal fade" id="reasonModal-{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel-{{ event.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="reasonModalLabel-{{ event.id }}">Reason for: {{ event.event_name }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                {{ event.body|linebreaksbr|default:"No reason provided." }}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>There are no pending Sports OD requests for students in your department.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+
+{% extends 'base.html' %}
+
+{% block mobile_header %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-2">
+    <h3>Student Details</h3>
+    <div class="search-bar mb-3">
+        <input type="text" id="search-input" class="form-control" placeholder="Search by Roll No or Name">
+    </div>
+
+        <div class="od-table">
+        <div class="od-table-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span class="header-title">Students</span>
+            <a href="{% url 'dash' %}" class="home-icon d-block d-md-none" style="color:white;">
+                <i class="fa fa-home" aria-hidden="true" aria-label="Home"></i>
+            </a>
+        </div>
+        <hr class="od-divider">
+        <style>
+            .od-table { width:100%; margin-top:8px; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.06); border-radius:8px; overflow-x:auto; }
+            .od-table-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#1976d2; color:#fff; font-weight:600; border-top-left-radius:8px; border-top-right-radius:8px; }
+            .od-divider { margin:0; border:0; height:2px; background:linear-gradient(to right,#e0e7ff,#e0e0e0); }
+            .od-table table { width:100%; border-collapse:collapse; table-layout: fixed; margin:0; }
+            .od-table thead th { background:#f5f7fa; color:#2c3e50; font-weight:600; padding:10px; text-align:center; border-bottom:1px solid #e6eef6; }
+            .od-table tbody tr { transition:background 0.12s ease; }
+            .od-table tbody tr:nth-child(even) { background:#fbfdff; }
+            .od-table tbody tr:hover { background:#f1f5f9; }
+            .od-table td, .od-table th { padding:8px; border:1px solid #e8f0f6; vertical-align:middle; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; text-align:center; }
+            .od-table a { color:#1565c0; }
+            .od-table .btn { padding:4px 8px; font-size:0.9rem; }
+            @media (max-width:768px) {
+                .od-table { padding:8px; }
+                .od-table table { display:block; width:100%; }
+                .od-table thead { display:none; }
+                .od-table tbody { display:block; width:100%; padding:0; margin:0; }
+                .od-table tbody tr { display:block; width:100%; border:1px solid #e6eef6; margin:0 0 8px 0; border-radius:6px; padding:8px; background:#fff; box-sizing:border-box; }
+                .od-table td { display:block; padding:6px 0; border:none; border-bottom:1px solid #f1f5f9; white-space:normal; box-sizing:border-box; font-size:0.95rem; text-align:left; }
+                .od-table td::before { content: attr(data-label); display:block; font-weight:600; color:#555; margin-bottom:6px; }
+                .od-table td:last-child { border-bottom:none; }
+                .od-table a { word-break:break-all; }
+            }
+        </style>
+
+        <table class="table table-bordered text-center mb-0">
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>OD</th>
+                    <th>Leave</th>
+                    <th>Gatepass</th>
+                    <th>Bonafide</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="student-table-body">
+                {% if students %}
+                    {% for student in students %}
+                    <tr>
+                        <td data-label="Roll No">{{ student.roll_no }}</td>
+                        <td data-label="Name">{{ student.name }}</td>
+                        <td data-label="Email">{{ student.email }}</td>
+                        <td data-label="OD">
+                            <a href="{% url 'advisor_student_od_status' student.id %}" title="View OD Status">
+                                {{ student.od_details|length }} OD(s)
+                            </a>
+                        </td>
+                        <td data-label="Leave">
+                            <a href="{% url 'advisor_student_leave_status' student.id %}" title="View Leave Status">
+                                {{ student.leave_details|length }} Leave(s)
+                            </a>
+                        </td>
+                        <td data-label="Gatepass">
+                            {% if student.gatepass_details %}
+                                <a href="{% url 'advisor_student_gatepass_status' student.id %}" title="View Gatepass Status">
+                                    {{ student.gatepass_details|length }} Gatepass(es)
+                                </a>
+                            {% else %}
+                                0 Gatepass(es)
+                            {% endif %}
+                        </td>
+                        <td data-label="Bonafide">
+                            {% if student.bonafide_details %}
+                                <a href="{% url 'advisor_student_bonafide_status' student.id %}" title="View Bonafide Status">
+                                    {{ student.bonafide_details|length }} Bonafide(s)
+                                </a>
+                            {% else %}
+                                0 Bonafide(s)
+                            {% endif %}
+                        </td>
+                        <td data-label="Actions">
+                            <a href="{% url 'view_student_details' student.id %}" class="btn btn-primary">View All</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="8">No students found under your class.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    document.getElementById('search-input').addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#student-table-body tr');
+        rows.forEach(row => {
+            // Find first two visible cells for roll and name (some rows may be placeholders)
+            const cells = row.querySelectorAll('td');
+            if (!cells || cells.length < 2) return;
+            const rollNo = (cells[0].innerText || '').toLowerCase();
+            const name = (cells[1].innerText || '').toLowerCase();
+            if (rollNo.includes(filter) || name.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

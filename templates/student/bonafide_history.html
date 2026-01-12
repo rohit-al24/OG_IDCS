@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block root %}
+<style>
+    /* Copy of OD page styles (fonts/colors/layout) — applied to Bonafide table */
+    .od-table, .bf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .od-table-header, .bf-table-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: #1976d2;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.25rem;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .od-table-header .header-title, .bf-table-header .header-title { margin: 0; }
+
+    .od-table-header .home-icon i, .bf-table-header .home-icon i {
+        font-size: 1.5rem;
+        color: #fff;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .od-table-header .home-icon:hover i, .bf-table-header .home-icon:hover i { transform: scale(1.2); }
+
+    hr.od-divider, hr.bf-divider { margin: 0; border: 0; border-top: 2px solid #e0e0e0; }
+
+    /* Rows use same grid system as OD page so cards expand fully when modal/viewed */
+    .bf-header, .bf-row, .od-header, .od-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 100px 100px 100px 220px;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .bf-header, .od-header {
+        background: #f1f1f1;
+        color: #333;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .bf-row:nth-child(even), .od-row:nth-child(even) { background: #f9f9f9; }
+    .bf-id, .od-id { font-weight: 700; color: #1976d2; }
+
+    /* Badges (copy of OD) */
+    .badge { padding: 5px 10px; border-radius: 12px; font-weight: 600; color: #fff; font-size: 0.8rem; text-align: center; }
+    .badge-Approved { background: #4caf50; }
+    .badge-Pending { background: #ff9800; }
+    .badge-Rejected { background: #f44336; }
+    .badge-secondary { background: #9e9e9e; }
+
+    .bf-actions, .od-actions { display: flex; flex-direction: column; gap: 6px; }
+    .bf-actions input[type="file"], .od-actions input[type="file"] { display: none; }
+    .file-upload-label, .btn-upload, .btn-outline-primary {
+        padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.85rem;
+    }
+    .file-upload-label { background: #1976d2; color: #fff; }
+    .file-upload-label:hover { background: #1565c0; }
+    .btn-upload { background: #4caf50; border: none; color: #fff; }
+    .btn-upload:hover { background: #388e3c; }
+
+    /* Responsive stacking (same behavior as OD) */
+    @media (max-width: 768px) {
+        .bf-table, .od-table { padding: 10px; }
+        .bf-header, .bf-row, .od-header, .od-row { grid-template-columns: 1fr; text-align: left; }
+        .bf-header div, .od-header div { display: none; }
+        .bf-row, .od-row {
+            border: 1px solid #e0e0e0; margin-bottom: 12px; border-radius: 8px; padding: 10px; background: #fff;
+        }
+        .bf-row > div, .od-row > div { display: flex; justify-content: space-between; padding: 4px 0; }
+        .bf-row > div::before, .od-row > div::before { content: attr(data-label); font-weight: 600; color: #555; }
+    }
+
+</style>
+
+<div class="bf-table">
+    <!-- Table Header Section (Title + Icon) -->
+    <div class="bf-table-header">
+        <span class="header-title">Bonafide Status</span>
+        <a href="{% url 'dash' %}" class="home-icon">
+            <i class="fa fa-home"></i>
+        </a>
+    </div>
+    <hr class="bf-divider">
+
+    {% if bonafides %}
+    <!-- Column Headers -->
+    <div class="bf-header">
+        <div>ID</div>
+        <div>Subject</div>
+        <div>Mentor</div>
+        <div>Advisor</div>
+        <div>HOD</div>
+        <div>Actions</div>
+    </div>
+
+    <!-- Table Rows -->
+    {% for i in bonafides %}
+    <div class="bf-row">
+        <div class="bf-id" data-label="ID">#BF{{ i.id }}</div>
+        <div class="bf-title" data-label="Subject">{{ i.sub }}</div>
+        <div data-label="Mentor"><span class="badge badge-{{ i.Mstatus }}">{{ i.Mstatus }}</span></div>
+        <div data-label="Advisor"><span class="badge badge-{{ i.Astatus }}">{{ i.Astatus }}</span></div>
+        <div data-label="HOD"><span class="badge badge-{{ i.Hstatus }}">{{ i.Hstatus }}</span></div>
+
+        <div class="bf-actions" data-label="Actions">
+            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#bfModal{{ i.id }}">
+                View Details
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="bfModal{{ i.id }}" tabindex="-1" role="dialog" aria-labelledby="bfModalLabel{{ i.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Bonafide Details</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="max-height:80vh; overflow-y:auto;">
+                                <div style="padding:1rem;">
+                                <div class="application-body" data-body="{{ i.body|escapejs }}">
+                                    {{ i.body|linebreaksbr }}
+                                </div>
+                                <script>
+                                (function(){
+                                    try{
+                                        var script = document.currentScript;
+                                        var el = script && script.previousElementSibling;
+                                        if(!el || !el.classList || !el.classList.contains('application-body')) return;
+                                        var raw = el.getAttribute('data-body') || '';
+                                        // If body looks like key: value | key2: value2, parse into rows
+                                        if(raw.indexOf('|') !== -1 && raw.indexOf(':') !== -1){
+                                            var parts = raw.split('|').map(function(s){ return s.trim(); }).filter(function(s){ return s.length>0; });
+                                            if(parts.length){
+                                                var container = document.createElement('div');
+                                                container.className = 'app-details';
+                                                parts.forEach(function(p){
+                                                        var kv = p.split(':');
+                                                    if(kv.length>=2){
+                                                        var label = kv.shift().trim();
+                                                        // remove apostrophes from labels (e.g., Father's -> Fathers)
+                                                        label = label.replace(/'/g, '');
+                                                        var value = kv.join(':').trim();
+                                                        // Normalize Branch spacing (AI & DS -> AI&DS)
+                                                        var lkey = label.toLowerCase();
+                                                        if(lkey.indexOf('branch') !== -1){
+                                                            value = value.replace(/\s*&\s*/g, '&');
+                                                        }
+                                                        // Capitalize first letter of value if it's lowercase (except for acronyms)
+                                                        if(value && value[0] && value[0] === value[0].toLowerCase()){
+                                                            value = value.charAt(0).toUpperCase() + value.slice(1);
+                                                        }
+                                                        var row = document.createElement('div');
+                                                        row.className = 'app-row';
+                                                        var strong = document.createElement('strong');
+                                                        strong.textContent = label + ': ';
+                                                        var span = document.createElement('span');
+                                                        span.textContent = value;
+                                                        row.appendChild(strong);
+                                                        row.appendChild(span);
+                                                        container.appendChild(row);
+                                                    } else {
+                                                        // not a kv pair; just add as text
+                                                        var row = document.createElement('div');
+                                                        row.className = 'app-row';
+                                                        row.textContent = p;
+                                                        container.appendChild(row);
+                                                    }
+                                                });
+                                                el.innerHTML = '';
+                                                el.appendChild(container);
+                                            }
+                                        }
+                                    }catch(e){ /* leave fallback content */ }
+                                })();
+                                </script>
+                                {% if i.proof %}
+                                <div style="margin-top:1rem; display:flex; justify-content:center;">
+                                    {% if ".pdf" in i.proof.url|lower %}
+                                    <iframe src="{{ i.proof.url }}" style="width:100%; height:60vh; border:none;"></iframe>
+                                    {% else %}
+                                    <img src="{{ i.proof.url }}" alt="Proof" style="max-width:100%; max-height:60vh; object-fit:contain;" />
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="text-align:center;width:100%;padding:20px;">No Bonafide records found</p>
+    {% endif %}
+</div>
+{% endblock %}

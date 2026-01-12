@@ -1,0 +1,12 @@
+
+<ul class="list-group">
+  {% for ach in achievements %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-warning mr-2"><i class="fa fa-trophy"></i></span>
+      {{ ach.title }} <span class="text-muted">({{ ach.date }})</span>
+      <button hx-post="{% url 'resumebuilder:delete_ach' ach.resume.id ach.id %}" hx-target="#ach-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No achievements added.</li>
+  {% endfor %}
+</ul>

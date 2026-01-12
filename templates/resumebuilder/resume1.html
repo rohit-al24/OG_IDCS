@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,700|Lato:400,700&display=swap" rel="stylesheet">
+<div class="resume-preview resume-preview-font bg-white p-0" style="max-width:900px;margin:auto;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+	<div class="row no-gutters">
+		<div class="col-md-4 bg-light p-4 text-center" style="min-height:100%;">
+{# Deprecated: Use resume_template.html instead #}
+		</div>
+		<div class="col-md-8 p-4">
+			<h4 class="section-title" style="color:#28a745;border-bottom:2px solid #28a745;display:inline-block;">Education</h4>
+			<ul class="list-unstyled mb-4">
+				{% for edu in resume.get_education %}
+					<li class="mb-1"><i class="fa fa-school text-primary mr-1"></i> {{ edu.degree }} at <strong>{{ edu.institution }}</strong> <span class="text-muted">({{ edu.start_year }}-{{ edu.end_year }})</span></li>
+				{% endfor %}
+			</ul>
+			<h4 class="section-title" style="color:#ffc107;border-bottom:2px solid #ffc107;display:inline-block;">Achievements</h4>
+			<ul class="list-unstyled mb-4">
+				{% for ach in resume.get_achievements %}
+					<li class="mb-1"><i class="fa fa-trophy text-warning mr-1"></i> {{ ach.title }} <span class="text-muted">({{ ach.date }})</span></li>
+				{% endfor %}
+			</ul>
+			<h4 class="section-title" style="color:#17a2b8;border-bottom:2px solid #17a2b8;display:inline-block;">Projects</h4>
+			<ul class="list-unstyled mb-4">
+				{% for pro in resume.get_projects %}
+					<li class="mb-1"><i class="fa fa-folder-open text-info mr-1"></i> {{ pro.name }} {% if pro.link %}<a href="{{ pro.link }}" target="_blank" class="ml-2">[Link]</a>{% endif %}</li>
+				{% endfor %}
+			</ul>
+			<h4 class="section-title" style="color:#fd7e14;border-bottom:2px solid #fd7e14;display:inline-block;">Languages</h4>
+			<ul class="list-unstyled mb-4">
+				{% for lang in resume.get_languages %}
+					<li class="mb-1"><i class="fa fa-language text-warning mr-1"></i> {{ lang.name }} <span class="text-muted">({{ lang.proficiency }})</span></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}

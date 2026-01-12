@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center" style="height: 60vh;">
+    <h3>Analyzing Resume...</h3>
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
+    <dotlottie-wc src="https://lottie.host/679b9d38-8295-4b4e-8473-5c3007bc1822/OPX5BgRpVv.lottie" style="width: 300px;height: 300px" autoplay loop></dotlottie-wc>
+    <div class="w-100 mt-4">
+        <div class="progress" style="height: 30px;">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; font-size: 1.2em;">0%</div>
+        </div>
+    </div>
+    <div id="progress-lines" class="mt-3 text-center" style="width: 100%; max-width: 400px;"></div>
+</div>
+<script>
+    // Set the analysis result URL for redirect
+    window.analysisResultUrl = "{{ analysis_url }}";
+</script>
+<script src="{% static 'ats_async_analysis.js' %}"></script>
+{% endblock %}

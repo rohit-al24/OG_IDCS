@@ -1,0 +1,12 @@
+
+<ul class="list-group">
+  {% for skill in skills %}
+    <li class="list-group-item fade-in">
+      <span class="icon text-success mr-2"><i class="fa fa-check"></i></span>
+      {{ skill.name }} <span class="text-muted">({{ skill.level }})</span>
+      <button hx-post="{% url 'resumebuilder:delete_skill' skill.resume.id skill.id %}" hx-target="#skills-section" hx-swap="outerHTML" class="btn btn-outline-danger btn-outline-sm ml-auto float-right">Delete</button>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No skills added.</li>
+  {% endfor %}
+</ul>

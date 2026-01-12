@@ -1,0 +1,192 @@
+/* Resume Builder Custom Styles */
+
+/* Section header color bars */
+.section-header {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.section-header.skills { border-left: 6px solid #007bff; padding-left: 10px; }
+.section-header.education { border-left: 6px solid #28a745; padding-left: 10px; }
+.section-header.achievements { border-left: 6px solid #ffc107; padding-left: 10px; }
+.section-header.projects { border-left: 6px solid #17a2b8; padding-left: 10px; }
+.section-header.socials { border-left: 6px solid #6610f2; padding-left: 10px; }
+.section-header.languages { border-left: 6px solid #fd7e14; padding-left: 10px; }
+
+/* Card styles */
+.resume-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: box-shadow 0.3s, transform 0.3s;
+  border-radius: 12px;
+  background: var(--bs-card-bg, #fff);
+}
+.resume-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.16);
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Button gradients & hover */
+.btn-gradient {
+  background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
+  color: #fff;
+  border: none;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.btn-gradient:hover {
+  background: linear-gradient(90deg, #6610f2 0%, #007bff 100%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* List group icons & fade-in */
+.list-group-item {
+  display: flex;
+  align-items: center;
+  animation: fadeIn 0.5s;
+}
+.list-group-item .icon {
+  margin-right: 8px;
+  font-size: 1.1em;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Outline small buttons */
+.btn-outline-sm {
+  padding: 2px 10px;
+  font-size: 0.85em;
+  border-radius: 20px;
+  margin-left: 6px;
+}
+
+/* Floating Save button */
+.floating-save {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  border-radius: 50px;
+  padding: 12px 32px;
+  font-size: 1.1em;
+}
+
+/* Responsive grid for cards */
+@media (min-width: 576px) {
+  .resume-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+}
+@media (min-width: 992px) {
+  .resume-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Spacing & margins */
+.section {
+  margin-bottom: 2.5rem;
+}
+
+/* Accordion for mobile */
+@media (max-width: 575px) {
+  .section-content { display: none; }
+  .section-content.active { display: block; }
+}
+
+/* Dark mode compatibility */
+@media (prefers-color-scheme: dark) {
+  body, .resume-card {
+    background: #181a1b !important;
+    color: #e4e6eb !important;
+  }
+  .resume-card {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.32);
+  }
+  .btn-gradient {
+    color: #fff;
+  }
+}
+
+/* Google Fonts for resume preview */
+.resume-preview-font {
+  font-family: 'Roboto', 'Lato', Arial, sans-serif;
+}
+
+/* Print styles for resume preview */
+@media print {
+  .no-print { display: none !important; }
+  body, .resume-preview {
+    background: #fff !important;
+    color: #222 !important;
+    font-size: 12pt;
+  }
+  .resume-preview {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    box-shadow: none;
+    page-break-after: always;
+  }
+}
+
+/* Responsive tweaks for resume preview */
+.resume-preview .row, .resume-preview .d-flex {
+  flex-wrap: wrap;
+}
+.resume-preview .col-md-4, .resume-preview .col-md-8, .resume-preview .col-md-6 {
+  min-width: 220px;
+}
+@media (max-width: 767px) {
+  .resume-preview {
+    padding: 8px !important;
+    box-shadow: none;
+  }
+  .resume-preview .col-md-4, .resume-preview .col-md-8, .resume-preview .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 0 12px 0;
+  }
+  .resume-preview .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Hover animations for buttons and cards */
+.btn-gradient, .btn-outline-primary, .btn-outline-info, .btn-outline-danger, .btn-outline-success, .btn-outline-warning, .btn-outline-secondary {
+  transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+}
+.btn-gradient:hover, .btn-outline-primary:hover, .btn-outline-info:hover, .btn-outline-danger:hover, .btn-outline-success:hover, .btn-outline-warning:hover, .btn-outline-secondary:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: translateY(-2px) scale(1.04);
+}
+.resume-card:hover {
+  border: 1.5px solid #007bff;
+}
+
+/* Consistent spacing for list groups and sections */
+.list-group-item {
+  margin-bottom: 6px;
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+.section {
+  padding-bottom: 1.5rem;
+}
+
+/* Improved dark mode for preview */
+@media (prefers-color-scheme: dark) {
+  .resume-preview, .resume-preview-font {
+    background: #23272b !important;
+    color: #e4e6eb !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.32);
+  }
+  .resume-preview .section-title {
+    color: #90caf9 !important;
+    border-bottom: 2px solid #90caf9 !important;
+  }
+  .resume-preview .list-group-item {
+    background: #181a1b !important;
+    color: #e4e6eb !important;
+  }
+}

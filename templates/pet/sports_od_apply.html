@@ -1,0 +1,127 @@
+{% extends 'pet/base.html' %}
+{% block pet_content %}
+<div class="card shadow">
+    <div class="card-header">
+        <h4 class="mb-0">Apply for Sports OD</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Event Name</label>
+                    <input type="text" name="event_name" class="form-control" required>
+                </div>
+                <!-- ADD THIS TEXTAREA -->
+                <div class="col-md-12 form-group">
+                    <label>Body / Reason for OD</label>
+                    <textarea name="body" class="form-control" rows="4" placeholder="Enter details or reason for the On-Duty request..."></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Start Date & Time</label>
+                    <input type="datetime-local" name="start_date" class="form-control" required>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>End Date & Time</label>
+                    <input type="datetime-local" name="end_date" class="form-control" required>
+                </div>
+            </div>
+
+            <hr>
+            <h5>Players</h5>
+            <div id="players-container">
+                <div class="row player-row align-items-center mb-3 p-2 border rounded">
+                    <div class="col-md-3 form-group">
+                        <label>Student ID (Register Number)</label>
+                        <input type="text" name="student_roll" class="form-control student-id-input" placeholder="Enter Student ID..." required>
+                        <small class="text-danger error-message" style="display:none;">Student not found</small>
+                    </div>
+                    <div class="col-md-3 form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control student-name" readonly>
+                    </div>
+                    <div class="col-md-2 form-group">
+                        <label>Department</label>
+                        <input type="text" class="form-control student-department" readonly>
+                    </div>
+                    <div class="col-md-2 form-group">
+                        <label>Year</label>
+                        <input type="text" class="form-control student-year" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-player-btn" style="display:none;">Remove</button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="add-player-btn" class="btn btn-secondary mt-2">Add Another Player</button>
+            <hr>
+            <button type="submit" class="btn btn-success">Submit Application</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('players-container');
+
+    // Add a new player row
+    document.getElementById('add-player-btn').addEventListener('click', function() {
+        const newPlayerRow = container.querySelector('.player-row').cloneNode(true);
+        newPlayerRow.querySelectorAll('input').forEach(input => input.value = '');
+        newPlayerRow.querySelector('.error-message').style.display = 'none';
+        newPlayerRow.querySelector('.remove-player-btn').style.display = 'inline-block';
+        container.appendChild(newPlayerRow);
+    });
+
+    // Remove a player row
+    container.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-player-btn')) {
+            e.target.closest('.player-row').remove();
+        }
+    });
+
+    // Fetch student details when a student ID is entered
+    container.addEventListener('blur', function(e) {
+        if (e.target && e.target.classList.contains('student-id-input')) {
+            const idInput = e.target;
+            const studentId = idInput.value.trim();
+            const playerRow = idInput.closest('.player-row');
+            const nameInput = playerRow.querySelector('.student-name');
+            const deptInput = playerRow.querySelector('.student-department');
+            const yearInput = playerRow.querySelector('.student-year');
+            const errorMsg = playerRow.querySelector('.error-message');
+
+            // Clear previous details
+            nameInput.value = '';
+            deptInput.value = '';
+            yearInput.value = '';
+            errorMsg.style.display = 'none';
+
+            if (!studentId) {
+                return;
+            }
+
+            // Fetch using the updated URL structure
+            fetch(`/pet/api/get-student-details/${studentId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        nameInput.value = data.name;
+                        deptInput.value = data.department;
+                        yearInput.value = data.year;
+                    } else {
+                        errorMsg.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching student details:', error);
+                    errorMsg.textContent = 'Error fetching data';
+                    errorMsg.style.display = 'block';
+                });
+        }
+    }, true); // Use event capturing
+});
+</script>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+{% block root %}
+
+<style>
+/* ===== Header Bar ===== */
+.gp-header-bar {
+    padding: 14px 22px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1976d2;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.header-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: left;
+}
+
+.home-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.home-icon:hover i {
+    transform: scale(1.2);
+}
+
+/* ===== Card ===== */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: none;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 16px;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* ===== Table ===== */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.table thead th {
+    background: #1976d2;
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px;
+}
+
+.table thead th:first-child {
+    text-align: left;
+    width: 140px; /* fixed width for Day column */
+}
+
+.table tbody td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+    vertical-align: middle;
+}
+
+.table tbody td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: #444;
+}
+
+.table tbody td:not(:first-child) {
+    text-align: center;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.table tbody tr:hover {
+    background: #f1f7ff;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 767px) {
+    .gp-header-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-title {
+        flex: 1;
+        font-size: 1.1rem;
+        text-align: left;
+    }
+
+    .home-icon {
+        flex: 0;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table, .table tbody, .table tr, .table td {
+        display: block;
+        width: 100%;
+    }
+
+    .table tr {
+        margin-bottom: 18px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table tbody td {
+        text-align: left !important;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        font-size: 14px;
+    }
+
+    .table tbody td:last-child {
+        border-bottom: none;
+    }
+
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #555;
+        display: block;
+        margin-bottom: 4px;
+    }
+}
+</style>
+
+<!-- Header -->
+
+
+<!-- Timetable Card -->
+<div class="row" style="margin-top: 20px;">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <span class="header-title">Class Timetable</span>
+                <a href="{% url 'dash' %}" class="home-icon">
+                    <i class="fa fa-home"></i>
+                </a>
+            </div>
+            <div class="card-body">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div>
+                        <form id="day-select-form" method="get" action="">
+                            <select id="day-select" name="day" onchange="document.getElementById('day-select-form').submit()" style="padding:6px 8px; border-radius:4px;">
+                                
+                                {% for d in days %}
+                                    <option value="{{ d }}" {% if selected_day == d %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div>
+                        <!-- optional space for controls / export in future -->
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Day / Period</th>
+                                {% for p in periods %}
+                                    <th>{{ p }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in days_to_show %}
+                            <tr>
+                                <td data-label="Day"><b>{{ day }}</b></td>
+                                {% for p in periods %}
+                                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                                        <td data-label="Period {{ p }}">
+                                            {{ table|dict_get:key }}
+                                        </td>
+                                    {% endwith %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

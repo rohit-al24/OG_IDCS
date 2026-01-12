@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+
+{% block content %}
+<h3 class="mt-5">HOD Timetable</h3>
+<form method="post" id="hod-timetable-form">
+    {% csrf_token %}
+    <button type="button" id="edit-btn" class="btn btn-secondary mb-2" onclick="toggleEdit()">Edit</button>
+    <button type="submit" id="save-btn" class="btn btn-primary mb-2" style="display:none;">Save</button>
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>Day / Period</th>
+                {% for p in periods %}
+                    <th>{{ p }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in days %}
+            <tr>
+                <td><b>{{ day }}</b></td>
+                {% for p in periods %}
+                    {% with key=day|add:"_"|add:p|stringformat:"s" %}
+                        <td>
+                            <select name="{{ key }}" class="form-control timetable-input" disabled>
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in assigned_subjects %}
+                                    <option value="{{ subject.name }}" {% if my_table|dict_get:key == subject.name %}selected{% endif %}>{{ subject.name }}</option>
+                                {% endfor %}
+                                <option value="others">Others</option>
+                            </select>
+                            <input type="text" name="custom_{{ key }}" class="form-control timetable-input" placeholder="Listing other department subjects..." style="display:none;" disabled>
+                        </td>
+                        <script>
+                        document.querySelector('[name="{{ key }}"]').addEventListener('change', function() {
+                            const customInput = document.querySelector('[name="custom_{{ key }}"]');
+                            if (this.value === 'others') {
+                                customInput.style.display = '';
+                                customInput.disabled = false;
+                                customInput.placeholder = "Listing other department subjects...";
+                            } else {
+                                customInput.style.display = 'none';
+                                customInput.disabled = true;
+                            }
+                        });
+                        </script>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+<script>
+function toggleEdit() {
+    const inputs = document.querySelectorAll('.timetable-input');
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    if (editBtn.innerText === 'Edit') {
+        inputs.forEach(i => i.removeAttribute('readonly'));
+        editBtn.innerText = 'Cancel';
+        saveBtn.style.display = '';
+    } else {
+        inputs.forEach(i => i.setAttribute('readonly', true));
+        editBtn.innerText = 'Edit';
+        saveBtn.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

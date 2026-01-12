@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block root %}
+<div class="container mt-4">
+    <h2 class="mb-4">Staff List</h2>
+    <div class="mb-3">
+        <a href="{% url 'hod_profile' %}" class="btn btn-secondary">Back to Profile</a>
+    </div>
+    {% if staff_members and staff_members.count > 0 %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Role</th>
+                <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in staff_members %}
+                <tr>
+                    <td>{{ staff.name }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>{{ staff.mobile }}</td>
+                    <td>{{ staff.role }}</td>
+                    <td>
+                        <a href="{% url 'view_mentees' staff.id %}" class="btn btn-info btn-sm">View Mentees</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">No staff found in this department.</div>
+    {% endif %}
+</div>
+{% endblock %}

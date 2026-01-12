@@ -1,0 +1,119 @@
+<form enctype="multipart/form-data" method="post" class="animated fadeIn">
+    {% csrf_token %}
+    
+    <!-- Username -->
+    <div class="form-group">
+        <div class="input-group">
+            <div class="input-group-addon"><i class="fa fa-user"></i></div>
+            <input type="text" disabled id="username" name="username" placeholder="Username" value="{{ user.username }}" class="form-control">
+        </div>
+    </div>
+
+    <!-- Mentors/Advisor/HOD -->
+    <div class="row">
+        <div class="col-md-4 mb-2">
+            <div class="input-group">
+                <div class="input-group-addon">Mentor</div>
+                <input type="text" id="mentor" name="mentor" value="Mr/Mrs. {{ duser.mentor.name }}" disabled class="form-control">
+            </div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <div class="input-group">
+                <div class="input-group-addon">Advisor</div>
+                <input type="text" id="advisor" name="advisor" value="Mr/Mrs. {{ duser.advisor.name }}" disabled class="form-control">
+            </div>
+        </div>
+        <div class="col-md-4 mb-2">
+            <div class="input-group">
+                <div class="input-group-addon">HOD</div>
+                <input type="text" id="hod" name="hod" value="Mr/Mrs. {{ duser.hod.name }}" disabled class="form-control">
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="form-group">
+        <input type="text" required id="sub" name="sub" placeholder="Subject" class="form-control">
+    </div>
+
+    <!-- Start & End Dates -->
+    <div class="row">
+        <div class="col-md-6 mb-2">
+            <label for="start">From</label>
+            <input type="datetime-local" name="start" id="start" class="form-control" required>
+        </div>
+        <div class="col-md-6 mb-2">
+            <label for="end">To</label>
+            <input type="datetime-local" name="end" id="end" class="form-control" required>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-group mt-3" style="width:100%;">
+        <button type="submit" class="btn btn-submit mr-2 col-md-8">Submit</button>
+        <button type="reset" class="btn btn-reset col-md-4">Reset</button>
+    </div>
+</form>
+
+<style>
+    /* Input group style */
+    .input-group-addon {
+        background: #2196f3 !important;
+        color: #fff !important;
+        font-weight: 600;
+        border: none !important;
+        border-radius: 0.25rem 0 0 0.25rem !important;
+        padding: 10px 12px;
+    }
+
+    .input-group .form-control[disabled],
+    .input-group .form-control:disabled {
+        background: #e3f2fd !important;
+        color: #333 !important;
+        border: none !important;
+        font-weight: 600;
+        border-radius: 0 0.25rem 0.25rem 0 !important;
+    }
+
+    /* Form controls */
+    .form-control, textarea {
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        background: #4caf50;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #388e3c;
+    }
+
+    .btn-reset {
+        background: #fff;
+        border: 2px solid #f44336;
+        color: #f44336;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+
+    .btn-reset:hover {
+        background: #f44336;
+        color: #fff;
+    }
+
+    @media (max-width: 767px) {
+        .btn-group .btn {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+    }
+</style>

@@ -1,0 +1,14 @@
+
+
+{% extends 'base.html' %}
+{% block content %}
+<h2>Extracted Resume Text</h2>
+<pre>{{ resume.extracted_text }}</pre>
+<button id="analyze-btn" class="btn btn-info">Analyze Resume</button>
+<script>
+	document.getElementById('analyze-btn').onclick = function() {
+		// Redirect to loading page with resume id
+		window.location.href = "{% url 'ATS:resume_loading' resume.id %}";
+	};
+</script>
+{% endblock %}

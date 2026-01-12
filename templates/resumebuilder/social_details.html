@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="font-weight-bold mb-4 text-primary"><i class="fa fa-link mr-2"></i>Social Details</h2>
+  <form method="post" enctype="multipart/form-data" id="social-form">{% csrf_token %}
+    <div class="card p-4 mb-3 bg-light">
+      <div id="social-inputs"></div>
+      <div class="d-flex mt-2">
+        <button type="button" class="btn btn-orange flex-grow-1 mr-2" onclick="addSocial()">Add <i class="fa fa-plus"></i></button>
+        <button type="button" class="btn btn-warning flex-grow-1" onclick="clearSocialInputs()">Clear</button>
+      </div>
+      <ul class="list-group mt-3" id="social-list">
+        {% for soc in socials %}
+          <li class="list-group-item d-flex align-items-center">
+            <span class="fa fa-link text-primary mr-2"></span>{{ soc.platform }}: <a href="{{ soc.url }}" target="_blank" class="ml-2">{{ soc.url }}</a>
+            <form method="post" action="{% url 'resumebuilder:delete_soc' resume.id soc.id %}" class="ml-auto">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No socials added.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="d-flex justify-content-end mt-4">
+      <button type="submit" class="btn btn-orange floating-save no-print"><i class="fa fa-save mr-2"></i>Save Socials</button>
+    </div>
+  </form>
+</div>
+<script>
+function createSocialFields() {
+  return `
+    <div class='row' id='soc-fields'>
+      <div class='col-md-6 mb-2'>
+        <select name='platform' class='form-control'>
+          <option value='Linkedin'>Linkedin</option>
+          <option value='Github'>Github</option>
+          <option value='Facebook'>Facebook</option>
+          <option value='Instagram'>Instagram</option>
+          <option value='X'>X</option>
+          <option value='Others'>Others</option>
+        </select>
+      </div>
+      <div class='col-md-6 mb-2'>
+        <input type='text' name='url' class='form-control' placeholder='Profile URL'>
+      </div>
+    </div>
+  `;
+}
+function addSocial() {
+  var container = document.getElementById('social-inputs');
+  var fields = container.querySelector('#soc-fields');
+  if (!fields) return;
+  var platform = fields.querySelector('select[name="platform"]').value;
+  var url = fields.querySelector('input[name="url"]').value.trim();
+  if (!platform && !url) return;
+  var list = document.getElementById('social-list');
+  var li = document.createElement('li');
+  li.className = 'list-group-item d-flex align-items-center';
+  li.innerHTML = `<span class='fa fa-link text-primary mr-2'></span>
+    <strong>${platform}</strong>: <a href='${url}' target='_blank' class='ml-2'>${url}</a>
+    <button type='button' class='btn btn-outline-danger btn-sm ml-auto' onclick='this.parentElement.remove(); removeHiddenSoc(this);'>Delete</button>`;
+  list.appendChild(li);
+  // Add hidden inputs to form
+  var form = document.getElementById('social-form');
+  var hiddenFields = [
+    ['soc_platform[]', platform],
+    ['soc_url[]', url]
+  ];
+  hiddenFields.forEach(function(pair) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = pair[0];
+    input.value = pair[1];
+    input.className = 'soc-hidden';
+    form.appendChild(input);
+  });
+  container.innerHTML = createSocialFields();
+}
+function removeHiddenSoc(btn) {
+  var form = document.getElementById('social-form');
+  var inputs = form.querySelectorAll('.soc-hidden');
+  for (var i = 0; i < 2; i++) {
+    if (inputs.length) form.removeChild(inputs[inputs.length-1]);
+    inputs = form.querySelectorAll('.soc-hidden');
+  }
+}
+function clearSocialInputs() {
+  var container = document.getElementById('social-inputs');
+  container.innerHTML = createSocialFields();
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('social-inputs').innerHTML = createSocialFields();
+});
+</script>
+{% endblock %}
